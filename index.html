@@ -6569,7 +6569,7 @@ body.is-edit-focus [data-edit-focus] {
         Sistema Lean + IA · HOB
       </span>
       <h1>Operações <span class="accent">Inteligentes</span><br>para o Hospital</h1>
-      <div class="home-hero-sub">Hospital Estadual Sílvio Avidos · Colatina/ES</div>
+      <div class="home-hero-sub">Hospital Metropolitano Odilon Behrens · Belo Horizonte/MG</div>
       <!-- [Fase 27] Linha ECG no lugar do divider — feel saúde direto. -->
       <svg class="home-hero-ecg" viewBox="0 0 140 28" aria-hidden="true" focusable="false">
         <!-- linha base de fundo (eco fraco) -->
@@ -7792,9 +7792,9 @@ const REFRESH_MS = 5 * 60 * 1000;
 ═══════════════════════════════════════════════════════════ */
 const HOSPITAL_ID = 'HOB';  // [HOB 2026-05-07] Hospital Metropolitano Odilon Behrens · Belo Horizonte/MG
 const HOSPITAL_NOME_CURTO = 'HOB';
-const HOSPITAL_NOME_LONGO = 'Hospital Estadual Sílvio Avidos';
-const HOSPITAL_LOCAL = 'Colatina/ES';
-const HOSPITAL_URL_PROD = 'https://hmsa-leitos.vercel.app';
+const HOSPITAL_NOME_LONGO = 'Hospital Metropolitano Odilon Behrens';
+const HOSPITAL_LOCAL = 'Belo Horizonte/MG';
+const HOSPITAL_URL_PROD = 'https://hob-leitos.vercel.app';
 
 const SB_URL  = 'https://smzejxtnykpjmxvxfzet.supabase.co';
 const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtemVqeHRueWtwam14dnhmemV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyOTA5ODQsImV4cCI6MjA5MTg2Njk4NH0.3WhTXc5j7YmsKNhxzrTIyAoGjMh36gnIIY0mBge-fKE';
@@ -9454,7 +9454,7 @@ async function exportPPT() {
       x:0.5, y:0.8, w:12.3, h:1.1,
       fontSize:44, bold:true, color:C.text, fontFace:'Calibri', align:'left',
     });
-    s1.addText('Hospital Estadual Sílvio Avidos — HMSA', {
+    s1.addText('Hospital Metropolitano Odilon Behrens — HOB', {
       x:0.5, y:1.9, w:12.3, h:0.55,
       fontSize:20, bold:true, color:C.teal, fontFace:'Calibri', align:'left',
     });
@@ -11000,7 +11000,7 @@ function pedirHmsaToken() {
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(11,26,51,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
       overlay.innerHTML = `
         <div style="background:var(--card);border:1px solid var(--accent,#14b8a6);border-radius:12px;padding:24px;max-width:420px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.5)">
-          <h2 style="margin:0 0 8px 0;font-size:18px;color:var(--text)">Token de acesso HMSA</h2>
+          <h2 style="margin:0 0 8px 0;font-size:18px;color:var(--text)">Token de acesso HOB</h2>
           <div class="hint-text" style="margin-bottom:16px;font-size:12px;line-height:1.5">
             Pra editar dados nesta sessão, digite o token de acesso.
             O token fica salvo neste dispositivo (localStorage) e não precisa ser digitado de novo.
