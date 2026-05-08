@@ -8532,6 +8532,10 @@ function renderLegend() {
      <div class="legend-item">
        <span style="font-size:9px;font-weight:700;background:rgba(59,130,246,.8);color:#fff;padding:1px 5px;border-radius:3px">PA</span>
        <span>Plano de ação registrado</span>
+     </div>
+     <div class="legend-item">
+       <span style="font-size:11px;font-weight:700;background:rgba(245,158,11,.85);color:#fff;padding:1px 5px;border-radius:3px;line-height:1.1">⚠</span>
+       <span>Previsão DRG diverge da Kanban</span>
      </div>`;
 }
 
@@ -8666,11 +8670,9 @@ function renderHeatmap(pts) {
           <div class="bed-days-label">dias</div>
           ${(() => {
             // [Maestro 05/mai] Prazo Kanban visível no card. Formata DD/MM se ISO; mostra livre senão.
-            // [HOB 2026-05-08] Indicador visual de divergência DRG vs Kanban — badge ⚠ amarelo + tooltip detalhado
+            // [HOB 2026-05-08] Card espremido: mantém só prazo OU só ⚠ se divergir (legenda em cima explica).
             const pr = (p.previsaoAlta || '').trim();
             if (!pr) return '';
-            const m = pr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            const display = m ? `${m[3]}/${m[2]}` : pr.slice(0, 8);
             const drg = (p.previsaoAltaDRG || '').trim().slice(0, 10);
             const kb = (p.previsaoKanban || '').trim().slice(0, 10);
             const divergem = drg && kb && drg !== kb;
@@ -8678,13 +8680,13 @@ function renderHeatmap(pts) {
               const m2 = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
               return m2 ? `${m2[3]}/${m2[2]}` : iso;
             };
-            const tooltip = divergem
-              ? `⚠ Previsão divergente · DRG: ${fmtDate(drg)} · Kanban: ${fmtDate(kb)}`
-              : `Prazo: ${escapeHtml(pr)}`;
-            const badgeDiv = divergem
-              ? '<span style="display:inline-block;background:rgba(245,158,11,0.85);color:#fff;font-size:8px;font-weight:700;padding:0 3px;border-radius:2px;margin-right:2px;line-height:1.3;" title="DRG diverge do Kanban">⚠</span>'
-              : '';
-            return `<div class="bed-prazo-kb" title="${tooltip}">${badgeDiv}até ${escapeHtml(display)}</div>`;
+            if (divergem) {
+              const tooltip = `⚠ Previsão divergente · DRG: ${fmtDate(drg)} · Kanban: ${fmtDate(kb)}`;
+              return `<div class="bed-prazo-kb" title="${tooltip}" style="background:rgba(245,158,11,0.85);color:#fff;font-weight:700;text-align:center;">⚠</div>`;
+            }
+            const m = pr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            const display = m ? `${m[3]}/${m[2]}` : pr.slice(0, 8);
+            return `<div class="bed-prazo-kb" title="Prazo: ${escapeHtml(pr)}">até ${escapeHtml(display)}</div>`;
           })()}
           ${(() => { const r = _barreirasResumo(ann); return r.count ? `<div class="bed-ann-tag" title="${escapeHtml(r.tooltip)}">${escapeHtml(r.tag)}</div>` : ''; })()}
         </div>
@@ -14978,6 +14980,7 @@ async function renderFilaSegmentada() {
         <td>
           <button class="cad-btn-icon cad-btn-success" onclick="_intHandlerAlocarFila('${i.id}')" title="Alocar em leito"><i data-lucide="bed-double"></i></button>
           ${typeof _intHandlerEditarCompleto === 'function' ? `<button class="cad-btn-icon" onclick="_intHandlerEditarCompleto('${i.id}')" title="Editar"><i data-lucide="pencil"></i></button>` : ''}
+          <button class="cad-btn-icon cad-btn-danger" onclick="_intExcluirInline('${i.id}','${(i.paciente_nome || '').replace(/'/g, '&#39;')}')" title="Excluir registro (pede senha)" aria-label="Excluir"><i data-lucide="trash-2"></i></button>
         </td>
       </tr>
     `;
