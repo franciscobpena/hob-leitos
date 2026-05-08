@@ -8651,7 +8651,8 @@ function renderHeatmap(pts) {
         aria-label="${_aria}">
         <div class="bed-badges">
           ${sp  ? '<span class="badge badge-sp">SP</span>'  : ''}
-          ${ann ? '<span class="badge badge-ann" title="Plano de ação registrado">PA</span>' : ''}
+          ${/* [HOB 2026-05-08] Badge PA removido do card (Maestro: poluia visualmente). Funcao de Plano de Acao
+              continua: ann ainda e' calculado pra outros usos (bed-ann-tag se quiser, futuro), mas nao vira badge. */ ''}
           ${hasOv ? '<span class="badge badge-ov" title="Leito corrigido manualmente (override EGA/NIR)">OV</span>' : ''}
         </div>
         <span class="bed-alta-btn" role="button" tabindex="0" onclick="event.stopPropagation(); _intHandlerDarAlta('${idEpAttr}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();_intHandlerDarAlta('${idEpAttr}');}" title="Dar alta médica" aria-label="Dar alta médica do leito ${p.numLeito}">
