@@ -495,16 +495,20 @@ section { margin-bottom:28px; }
 .bed-card-ov { box-shadow: inset 0 0 0 1px rgba(167,139,250,0.55); }
 
 /* [Fase 47] Botão lápis discreto no canto pra abrir modal de correção EGA/NIR */
-/* [HOB 2026-05-08] Bed-card icons: opacity 0.85 default (visível sempre, era 0 = só hover/feedback Maestro)
-   + backgrounds mais sólidos (era 0.35-0.6 = transparente demais). Hover destaca pra 1.0 + scale. */
+/* [HOB 2026-05-08 redesign] Princípios aplicados:
+   - Progressive Disclosure: ação primária (alta médica = 90% dos clicks Lean) visível default em opacity 0.7;
+     secundárias (editar, cancelar) hover-only — reduz ruído visual permanente
+   - Lei de Fitts: botões 17x17 (era 20) — alvo confortável sem dominar card 84x88
+   - Hierarquia: ✓ alta canto direito = ação primária; ✏ edit ao lado dela; × cancel canto esquerdo
+   - Backgrounds sólidos no hover (alpha 1.0) pra contraste claro de feedback */
 .bed-edit-btn {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   padding: 0;
-  background: rgba(167,139,250,0.85);
+  background: rgba(167,139,250,0.9);
   border: 1px solid rgba(255,255,255,0.30);
   border-radius: 4px;
   color: #fff;
@@ -512,22 +516,22 @@ section { margin-bottom:28px; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.85;
+  opacity: 0;
   transition: opacity 150ms ease, background-color 150ms ease, transform 150ms ease;
   z-index: 2;
 }
-.bed-edit-btn [data-lucide], .bed-edit-btn svg.lucide { width: 12px; height: 12px; }
+.bed-edit-btn [data-lucide], .bed-edit-btn svg.lucide { width: 11px; height: 11px; }
 .bed-card { position: relative; }
 .bed-card:hover .bed-edit-btn,
 .bed-card:focus-within .bed-edit-btn { opacity: 1; transform: scale(1.05); }
-.bed-edit-btn:hover { background: rgba(167,139,250,1); color: #fff; }
+.bed-edit-btn:hover { background: rgba(167,139,250,1); }
 
 .bed-alta-btn {
   position: absolute;
   top: 4px;
-  right: 28px;
-  width: 20px;
-  height: 20px;
+  right: 24px;
+  width: 17px;
+  height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -536,11 +540,11 @@ section { margin-bottom:28px; }
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
-  opacity: 0.85;
+  opacity: 0.7;
   transition: opacity 0.15s, background 0.15s, transform 0.15s;
   z-index: 2;
 }
-.bed-alta-btn [data-lucide], .bed-alta-btn svg.lucide { width: 12px; height: 12px; }
+.bed-alta-btn [data-lucide], .bed-alta-btn svg.lucide { width: 11px; height: 11px; }
 .bed-card:hover .bed-alta-btn,
 .bed-card:focus-within .bed-alta-btn { opacity: 1; transform: scale(1.05); }
 .bed-alta-btn:hover { background: rgba(34, 197, 94, 1); transform: scale(1.1); }
@@ -550,18 +554,18 @@ section { margin-bottom:28px; }
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(239, 68, 68, 0.85);
+  background: rgba(239, 68, 68, 0.9);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.30);
   border-radius: 50%;
   cursor: pointer;
-  opacity: 0.85;
-  font-size: 12px;
+  opacity: 0;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
   transition: opacity 0.15s, background 0.15s, transform 0.15s;
