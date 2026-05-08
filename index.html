@@ -15353,10 +15353,17 @@ const KaizenSync = (function() {
           KaizenStore.setPreworksFromServer(_serverData.preworks);
         }
         if (projetos.length === 0) {
-          console.log('[KaizenSync] DB vazio — fazendo seed dos mocks');
-          await KaizenAPI.seedMocks();
-          const [p2, a2] = await Promise.all([KaizenAPI.fetchProjetos(), KaizenAPI.fetchAcoes()]);
-          _serverData = { projetos: p2, acoes: a2, indicadores: indicadores || [] };
+          // [HOB 2026-05-08] Seed só roda em HMSA (mocks são HMSA-específicos).
+          // HOB e outros hospitais começam empty — equipe cadastra projetos próprios via UI.
+          if (typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID === 'HMSA') {
+            console.log('[KaizenSync] DB vazio — fazendo seed dos mocks (HMSA)');
+            await KaizenAPI.seedMocks();
+            const [p2, a2] = await Promise.all([KaizenAPI.fetchProjetos(), KaizenAPI.fetchAcoes()]);
+            _serverData = { projetos: p2, acoes: a2, indicadores: indicadores || [] };
+          } else {
+            console.log('[KaizenSync] DB vazio — seed pulado (HOSPITAL_ID !== HMSA, mocks são HMSA-específicos)');
+            _serverData = { projetos: [], acoes: [], indicadores: indicadores || [] };
+          }
         }
         _lastSyncAt = new Date();
         _lastError = null;
@@ -22419,6 +22426,16 @@ function abrirRegistrarMesVolumetria() {
 function renderIndicadores() {
   const cont = document.getElementById('ind-tabela-container');
   if (!cont) return;
+  // [HOB 2026-05-08] Multi-tenant guard: MOCK_DATA.indicadores é HMSA-específico (lista de itens
+  // hardcoded). Outros hospitais veem empty state até cadastrarem indicadores próprios.
+  if (typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID !== 'HMSA') {
+    cont.innerHTML = `
+      <div style="padding:32px 16px;text-align:center;color:var(--textMuted);font-style:italic;">
+        Indicadores ainda não cadastrados pra ${HOSPITAL_ID}.<br>
+        <span style="font-size:12px;opacity:0.8">Equipe cadastra via Supabase ou aguarda nova UI de cadastro de indicadores.</span>
+      </div>`;
+    return;
+  }
   const data = MOCK_DATA.indicadores;
   const ultimoMes = data.meses[data.meses.length - 1];
 
@@ -22574,8 +22591,11 @@ function getAllProjetosComOverrides() {
 
 /** Retorna indicadores cujo projetos_vinculados contém este projetoId.
  *  [Fase 15] Inclui também indicadores que esse projeto declara em indicadores_vinculados
- *  (vínculo via form Novo Projeto). União sem duplicatas. */
+ *  (vínculo via form Novo Projeto). União sem duplicatas.
+ *  [HOB 2026-05-08] MOCK_DATA.indicadores é HMSA-específico — outros hospitais retornam []. */
 function getIndicadoresByProjeto(projetoId) {
+  // Multi-tenant guard: mocks só pra HMSA
+  if (typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID !== 'HMSA') return [];
   const proj = getProjetoComOverrides(projetoId);
   // [Fase 46] Se proj define explicitamente indicadores_vinculados (via override
   // ou form de criação), o array é AUTORITATIVO (override pode remover reverse-only).
@@ -23559,10 +23579,13 @@ const DataLayer = (function() {
       return merged;
     },
 
-    /** Lista IDs de todos os projetos visíveis (mock + server net-new + override _is_new). */
+    /** Lista IDs de todos os projetos visíveis (mock + server net-new + override _is_new).
+     *  [HOB 2026-05-08] Multi-tenant fix: MOCK_DATA é HMSA-específico (projetos UCP/Larissa/Ramony/etc.).
+     *  Outros hospitais (HOB) veem APENAS dados reais do banco. Empty state força equipe a criar
+     *  projetos próprios em vez de herdar lista HMSA. */
     listProjetoIds() {
       const ids = new Set();
-      if (typeof MOCK_DATA !== 'undefined') {
+      if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID === 'HMSA') {
         MOCK_DATA.projetos.projetos.forEach(p => ids.add(p.id));
       }
       const sd = (typeof KaizenSync !== 'undefined' && KaizenSync.getState && KaizenSync.getState().serverData) || null;
@@ -23573,11 +23596,12 @@ const DataLayer = (function() {
       return Array.from(ids);
     },
 
-    /** Lista todas ações visíveis de um projeto (mock + server + override). */
+    /** Lista todas ações visíveis de um projeto (mock + server + override).
+     *  [HOB 2026-05-08] MOCK_DATA é HMSA-específico — outros hospitais veem só server+override. */
     listAcoesByProjeto(projId) {
       const ids = new Set();
-      // Mock
-      if (typeof MOCK_DATA !== 'undefined') {
+      // Mock (HMSA only)
+      if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID === 'HMSA') {
         const p = MOCK_DATA.projetos.projetos.find(p => p.id === projId);
         if (p) p.acoes.forEach(a => ids.add(a.id));
       }
