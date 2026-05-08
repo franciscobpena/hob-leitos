@@ -8533,10 +8533,7 @@ function renderLegend() {
        <span style="font-size:9px;font-weight:700;background:rgba(239,68,68,.8);color:#fff;padding:1px 5px;border-radius:3px">SP</span>
        <span>Sem previsão</span>
      </div>
-     <div class="legend-item">
-       <span style="font-size:9px;font-weight:700;background:rgba(59,130,246,.8);color:#fff;padding:1px 5px;border-radius:3px">PA</span>
-       <span>Plano de ação registrado</span>
-     </div>`;
+     `;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -8654,7 +8651,7 @@ function renderHeatmap(pts) {
         aria-label="${_aria}">
         <div class="bed-badges">
           ${sp  ? '<span class="badge badge-sp">SP</span>'  : ''}
-          ${ann ? '<span class="badge badge-ann">PA</span>' : ''}
+          ${ann ? '<span class="badge badge-ann" title="Plano de ação registrado">PA</span>' : ''}
           ${hasOv ? '<span class="badge badge-ov" title="Leito corrigido manualmente (override EGA/NIR)">OV</span>' : ''}
         </div>
         <span class="bed-alta-btn" role="button" tabindex="0" onclick="event.stopPropagation(); _intHandlerDarAlta('${idEpAttr}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();_intHandlerDarAlta('${idEpAttr}');}" title="Dar alta médica" aria-label="Dar alta médica do leito ${p.numLeito}">
