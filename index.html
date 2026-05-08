@@ -6440,6 +6440,10 @@ body.is-edit-focus [data-edit-focus] {
       <button class="sub-tab" id="tab-sub-action-plan" onclick="switchView('gestao-leitos','barreiras-alta')">
         <i aria-hidden="true" data-lucide="clipboard-list"></i> Barreiras da Alta <span class="tab-badge" id="tab-atraso-badge" style="display:none">0</span>
       </button>
+      <!-- [HOB 2026-05-08] Botão Configurar especialidades + capacidade do dashboard (mesmo pattern Retaguarda PS) -->
+      <button type="button" id="btn-gl-settings" onclick="_gestaoAbrirSettings()" title="Configurar especialidades visíveis e capacidade de leitos" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--textMuted);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:5px;">
+        <i aria-hidden="true" data-lucide="settings" style="width:13px;height:13px;"></i> Configurar
+      </button>
     </div>
 
     <!-- Direita: controles contextuais (visíveis só quando sub=dashboard) -->
@@ -6455,10 +6459,6 @@ body.is-edit-focus [data-edit-focus] {
         <option value="">Especialidade: todas</option>
       </select>
       <button class="btn btn-ghost" onclick="reloadData()" title="Atualizar dados" aria-label="Atualizar dados"><i aria-hidden="true" data-lucide="refresh-cw"></i></button>
-      <!-- [HOB 2026-05-08] Botão Configurar especialidades + capacidade do dashboard -->
-      <button type="button" id="btn-gl-settings" onclick="_gestaoAbrirSettings()" title="Configurar especialidades visíveis e capacidade de leitos" style="background:transparent;border:1px solid var(--border);color:var(--textMuted);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:5px;">
-        <i aria-hidden="true" data-lucide="settings" style="width:13px;height:13px;"></i> Configurar
-      </button>
     </div>
   </div>
 
