@@ -8536,10 +8536,6 @@ function renderLegend() {
      <div class="legend-item">
        <span style="font-size:9px;font-weight:700;background:rgba(59,130,246,.8);color:#fff;padding:1px 5px;border-radius:3px">PA</span>
        <span>Plano de ação registrado</span>
-     </div>
-     <div class="legend-item">
-       <span style="font-size:11px;font-weight:700;background:rgba(245,158,11,.85);color:#fff;padding:1px 5px;border-radius:3px;line-height:1.1">⚠</span>
-       <span>Previsão DRG diverge</span>
      </div>`;
 }
 
@@ -8674,20 +8670,9 @@ function renderHeatmap(pts) {
           <div class="bed-days-label">dias</div>
           ${(() => {
             // [Maestro 05/mai] Prazo Kanban visível no card. Formata DD/MM se ISO; mostra livre senão.
-            // [HOB 2026-05-08] Card espremido: mantém só prazo OU só ⚠ se divergir (legenda em cima explica).
+            // [HOB 2026-05-08] Maestro: usa PA pra sinalizar divergencia. Card mostra so prazo direto.
             const pr = (p.previsaoAlta || '').trim();
             if (!pr) return '';
-            const drg = (p.previsaoAltaDRG || '').trim().slice(0, 10);
-            const kb = (p.previsaoKanban || '').trim().slice(0, 10);
-            const divergem = drg && kb && drg !== kb;
-            const fmtDate = (iso) => {
-              const m2 = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
-              return m2 ? `${m2[3]}/${m2[2]}` : iso;
-            };
-            if (divergem) {
-              const tooltip = `⚠ Previsão divergente · DRG: ${fmtDate(drg)} · Kanban: ${fmtDate(kb)}`;
-              return `<div class="bed-prazo-kb" title="${tooltip}" style="background:rgba(245,158,11,0.85);color:#fff;font-weight:700;text-align:center;">⚠</div>`;
-            }
             const m = pr.match(/^(\d{4})-(\d{2})-(\d{2})/);
             const display = m ? `${m[3]}/${m[2]}` : pr.slice(0, 8);
             return `<div class="bed-prazo-kb" title="Prazo: ${escapeHtml(pr)}">até ${escapeHtml(display)}</div>`;
