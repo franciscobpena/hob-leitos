@@ -14044,7 +14044,7 @@ async function renderRetaguardaFila() {
           <td>${escHtml(p.especialidade || '—')}</td>
           <td>${escHtml(p.cid_principal || '—')}</td>
           <td>${formatarTempo(p.created_at)}</td>
-          <td style="text-align:right;white-space:nowrap">${botoesAlocar(idEsc)}</td>
+          <td style="text-align:right;white-space:nowrap">${botoesAlocar(idEsc)}<button class="cad-btn-icon cad-btn-danger" onclick="_intExcluirInline('${idEsc}','${escHtml(p.nome_paciente || '').replace(/'/g, '&#39;')}')" title="Excluir registro (pede senha)" aria-label="Excluir" style="margin-left:4px;"><i data-lucide="trash-2"></i></button></td>
         </tr>`;
     }).join('');
 
