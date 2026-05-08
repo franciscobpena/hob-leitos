@@ -1462,10 +1462,11 @@ section:nth-child(4) { animation-delay: .26s; }
   background: linear-gradient(90deg, var(--textMuted), transparent) !important;
 }
 
-/* AP row accents — mais visíveis */
-.ap-row-atraso    { background: rgba(239,68,68,.04) !important; }
-.ap-row-andamento { background: rgba(59,130,246,.04) !important; }
-.ap-row-concluida { background: rgba(34,197,94,.03) !important; }
+/* AP row accents — [HOB 2026-05-08] Maestro: efeito vermelho na linha em atraso ficou estranho.
+   Removido background. Status visual continua via .status-badge da coluna Status (intacto). */
+.ap-row-atraso    { /* sem background — status badge na coluna comunica */ }
+.ap-row-andamento { /* sem background — status badge na coluna comunica */ }
+.ap-row-concluida { opacity: 0.65; }  /* concluida fica mais discreta no histórico */
 
 /* Footer — refinado */
 footer {
@@ -8668,12 +8669,17 @@ function renderHeatmap(pts) {
           <div class="bed-days-label">dias</div>
           ${(() => {
             // [Maestro 05/mai] Prazo Kanban visível no card. Formata DD/MM se ISO; mostra livre senão.
-            // [HOB 2026-05-08] Maestro: usa PA pra sinalizar divergencia. Card mostra so prazo direto.
+            // [HOB 2026-05-08] Indicador discreto de Plano de Ação: bullet azul "•" como prefixo do prazo
+            // quando paciente tem ann (plano registrado). Não impacta badges SP/OV existentes (canto superior).
             const pr = (p.previsaoAlta || '').trim();
-            if (!pr) return '';
+            const temPA = !!ann;
+            const paIndicator = temPA ? '<span style="color:rgba(59,130,246,0.95);font-weight:700;margin-right:3px;" title="Plano de ação registrado">•</span>' : '';
+            if (!pr && !temPA) return '';
+            if (!pr && temPA) return `<div class="bed-prazo-kb" title="Plano de ação registrado · sem previsão de alta">${paIndicator}c/ ação</div>`;
             const m = pr.match(/^(\d{4})-(\d{2})-(\d{2})/);
             const display = m ? `${m[3]}/${m[2]}` : pr.slice(0, 8);
-            return `<div class="bed-prazo-kb" title="Prazo: ${escapeHtml(pr)}">até ${escapeHtml(display)}</div>`;
+            const tooltipPrazo = temPA ? `Prazo: ${escapeHtml(pr)} · Plano de ação registrado` : `Prazo: ${escapeHtml(pr)}`;
+            return `<div class="bed-prazo-kb" title="${tooltipPrazo}">${paIndicator}até ${escapeHtml(display)}</div>`;
           })()}
           ${(() => { const r = _barreirasResumo(ann); return r.count ? `<div class="bed-ann-tag" title="${escapeHtml(r.tooltip)}">${escapeHtml(r.tag)}</div>` : ''; })()}
         </div>
@@ -20184,11 +20190,16 @@ function populateEspFilter() {
     esps.map(e => `<option value="${e}"${e===prev?' selected':''}>${e}</option>`).join('');
 }
 
-/* ─── Badge de atraso na tab ─── */
+/* ─── Badge de quantidade de ações ativas na tab Barreiras da Alta ─── */
+/* [HOB 2026-05-08] Maestro: contador +N de planos de acao criados (atividade total).
+   Mostra '+N' onde N = ações nao-concluidas (em_andamento + pendente + em_atraso). */
 function updateAtrasoBadge() {
-  const n = actionPlanData.filter(a => getEffStatus(a) === 'em_atraso').length;
+  const n = actionPlanData.filter(a => {
+    const s = getEffStatus(a);
+    return s !== 'concluida' && s !== 'cancelada';
+  }).length;
   const badge = document.getElementById('tab-atraso-badge');
-  badge.textContent = n;
+  badge.textContent = '+' + n;
   badge.style.display = n > 0 ? '' : 'none';
 }
 
