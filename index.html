@@ -15389,9 +15389,16 @@ const KaizenAPI = (function() {
     return SB_URL + '/rest/v1/' + table + (query ? '?' + query : '');
   }
 
-  async function _fetch(url, opts = {}) {
+  async function _fetch(url, opts = {}, _retryAfterAuth = false) {
     const headers = { ...SB_H, 'X-HMSA-Token': HMSA_TOKEN, ...(opts.headers || {}) };
     const res = await fetch(url, { ...opts, headers });
+    // [Fix 2026-05-11] 401 = RLS rejeitou (token vazio/invalido). Prompta UMA vez e re-tenta.
+    // Caso recorrente em HOB (clone novo sem token no localStorage); idem em qualquer browser sessao
+    // nova. Guard `_retryAfterAuth` evita loop infinito.
+    if (res.status === 401 && !_retryAfterAuth && typeof ensureHmsaToken === 'function') {
+      const token = await ensureHmsaToken();
+      if (token) return _fetch(url, opts, true);
+    }
     if (!res.ok) {
       const txt = await res.text();
       throw new Error('Supabase ' + res.status + ': ' + txt);
