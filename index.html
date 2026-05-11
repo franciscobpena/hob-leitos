@@ -7287,7 +7287,7 @@ body.is-edit-focus [data-edit-focus] {
   <section style="padding:0 16px">
     <h1 class="view-title">Retaguarda PS · Histórico</h1>
     <div style="font-size:12px;color:var(--textMuted);margin-bottom:16px">
-      Pacientes que passaram pela Retaguarda PS e já saíram (alta médica, transferência, óbito, evasão).
+      Pacientes que passaram pela unidade e já saíram (alta médica, transferência, óbito, evasão).
     </div>
   </section>
   <section style="padding:0 16px 24px 16px">
@@ -7928,6 +7928,23 @@ async function sbPatchOptimistic(table, id, updatedAt, body, contextLabel) {
   }
 }
 
+/* ─── LUCIDE HELPER ─── [2026-05-11]
+ * Substitui chamadas espalhadas de `lucide.createIcons()` (15+ pontos).
+ * Causa raiz dos botões intermitentes: cada render chama createIcons() que varre o DOM inteiro
+ * e re-injeta SVGs. Múltiplos renders simultâneos disparam race — o último write vence,
+ * deixando ícones em estado parcial.
+ * Fix: throttle 50ms (imperceptível visual) + guard único contra reentrância. */
+let _lucideThrottle = null;
+function lucideRefresh() {
+  if (_lucideThrottle) return;
+  _lucideThrottle = setTimeout(() => {
+    _lucideThrottle = null;
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      try { lucide.createIcons(); } catch (e) { console.warn('[lucideRefresh]', e); }
+    }
+  }, 50);
+}
+
 /* ─── STATE ─── */
 let allPatients  = [];
 let usingDemo    = false;
@@ -8270,7 +8287,7 @@ async function loadData() {
       const cfgRetag = await fetch(`${SB_URL}/rest/v1/config_retaguarda_ps?hospital_id=eq.${HOSPITAL_ID}&ativo=eq.true&select=nome_setor`, { headers: SB_H });
       if (cfgRetag.ok) {
         const retNomes = (await cfgRetag.json()).map(r => `"${r.nome_setor}"`).join(',');
-        if (retNomes) filtroSetorNotIn = `&setor=not.in.(${retNomes})`;
+        if (retNomes) filtroSetorNotIn = `&or=(setor.is.null,setor.not.in.(${retNomes}))`;  // [2026-05-11] PostgreSQL trata NULL NOT IN como falso → exclui rows com setor=NULL. Fix: aceita setor IS NULL OR setor NOT IN (...). Aplica em todos os hospitais (HMSA/HJXXIII/HMAGR também se beneficia ao clonar).
       }
     } catch (errCfg) {
       console.warn('[Entrega 1] fetch config_retaguarda_ps falhou, sem filtro Retaguarda:', errCfg);
@@ -13452,7 +13469,7 @@ async function _onda6AbrirModalInternou(rowId, origem, tabela) {
       </div>
     </div>`;
   document.body.insertAdjacentHTML('beforeend', modalHtml);
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 function _onda6FecharModalInternou() {
@@ -13920,7 +13937,7 @@ async function renderInternacoesFila() {
 
     const container = document.getElementById('view-internacoes-fila-content');
     if (container) container.innerHTML = renderFilaSegmentadaOrigem(lista);
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    lucideRefresh();
   } catch (e) {
     console.error('[Onda6 T3] renderInternacoesFila erro:', e);
     const container = document.getElementById('view-internacoes-fila-content');
@@ -14194,7 +14211,7 @@ async function renderRetaguardaFila() {
         </thead>
         <tbody>${rows}</tbody>
       </table>`;
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    lucideRefresh();
   } catch (e) {
     console.error('[Entrega 2] renderRetaguardaFila erro:', e);
     if (stats) stats.textContent = `Erro ao carregar fila: ${e.message}`;
@@ -14459,7 +14476,7 @@ async function renderRetaguardaCards() {
     }).join('');
 
     wrapEl.innerHTML = setorBlocks;
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    lucideRefresh();
   } catch (e) {
     console.error('[Entrega 3] renderRetaguardaCards erro:', e);
     if (kpisEl) kpisEl.innerHTML = '';
@@ -16912,7 +16929,7 @@ function abRenderTabela() {
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 function abRenderAll() {
@@ -16984,7 +17001,7 @@ function abrirNovoEpisodio() {
   document.getElementById('ab-drawer-body').innerHTML = abRenderFormBody(null);
   _overlayNovo.style.display = 'flex';
   abBindFormHandlers();
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 /** [Onda 5 T7 — 2026-05-05] Guard: se drawer ja aberto em mode='novo' com campos preenchidos,
@@ -17013,7 +17030,7 @@ function abrirEditarEpisodio(id) {
   document.getElementById('ab-drawer-body').innerHTML = abRenderFormBody(ep);
   _overlayEditar.style.display = 'flex';
   abBindFormHandlers();
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 // [Onda 7 — 2026-05-06] abrirEncerrarEpisodio REMOVIDA. Substituída por chips inline (abChipsSaidaHTML)
@@ -17617,7 +17634,7 @@ async function _onda8DeadCode_salvarEpisodioInline_removida() {
     alert('Erro ao salvar: ' + e.message);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i aria-hidden="true" data-lucide="check"></i> Salvar paciente'; }
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    lucideRefresh();
   }
 }
 
@@ -17942,7 +17959,7 @@ async function renderCadastro(dim) {
     case 'tipo-caso': cadRenderListaSimples('tc'); break;
     case 'unidade-origem': cadRenderListaSimples('uo'); break;
   }
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 // [Fase 50] Pill click → atualiza URL e re-renderiza
@@ -18141,7 +18158,7 @@ function cadAbrirNovo(dim) {
   document.getElementById('cad-drawer-title').textContent = `Novo ${CAD_DIM_TO_LABEL[dim].toLowerCase()}`;
   document.getElementById('cad-drawer-body').innerHTML = cadRenderFormBody(dim, null);
   document.getElementById('cad-drawer-overlay').style.display = 'flex';
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 function cadAbrirEditar(dim, itemId) {
   if (!cadCheckAuth(() => cadAbrirEditar(dim, itemId))) return;
@@ -18151,7 +18168,7 @@ function cadAbrirEditar(dim, itemId) {
   document.getElementById('cad-drawer-title').textContent = `Editar ${CAD_DIM_TO_LABEL[dim].toLowerCase()}`;
   document.getElementById('cad-drawer-body').innerHTML = cadRenderFormBody(dim, item);
   document.getElementById('cad-drawer-overlay').style.display = 'flex';
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 function cadRenderFormBody(dim, item) {
@@ -18786,7 +18803,7 @@ async function renderInsercao() {
   // [Onda 5 T5] Renderiza KPIs + tabela fundidos em Inserir (copiados de visao-geral)
   abPopularFiltros();
   abRenderAll();
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
   setTimeout(() => { document.getElementById('ins-data')?.focus(); }, 50);
 }
 
@@ -18859,7 +18876,7 @@ function insRenderRecentes() {
       <thead><tr><th>ID</th><th>Entrou em</th><th>Especialidade</th><th>Diagnóstico</th><th>Observação</th><th style="width:90px;text-align:right">Ações</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 /** [Onda 8 — 2026-05-06] insSalvar restaurada — versão linha-planilha portada do HJXXIII.
@@ -18989,7 +19006,7 @@ async function insSalvar() {
     insToast('Erro ao salvar: ' + e.message, true);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i aria-hidden="true" data-lucide="check"></i> Salvar'; }
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    lucideRefresh();
   }
 }
 
@@ -19127,7 +19144,7 @@ async function renderHistorico() {
   }
   histPopular();
   histRender();
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 function histPopular() {
@@ -19237,7 +19254,7 @@ function histRender() {
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 function histEditarObs(id, td) {
@@ -19423,7 +19440,7 @@ async function renderInternacoes(subView) {
     case 'conferencias': intRenderConferencias(); break;
     case 'dicionario': intRenderDicionario(); break;
   }
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 async function intRecarregar() {
@@ -19596,7 +19613,7 @@ function intRenderLista() {
     });
   });
 
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 /* [Fase 55.4] Salva especialidade alterada no modal do Dashboard direto em internacoes_hmsa. */
@@ -19835,7 +19852,7 @@ async function intInputSalvar() {
   } catch (e) {
     intToast('Erro: ' + e.message, true);
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i aria-hidden="true" data-lucide="check"></i> Salvar'; if (typeof lucide !== 'undefined') lucide.createIcons(); }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i aria-hidden="true" data-lucide="check"></i> Salvar'; lucideRefresh(); }
   }
 }
 
@@ -20062,7 +20079,7 @@ function intAbrirNovaInternacao() {
   document.getElementById('int-drawer-title').textContent = 'Nova internação';
   document.getElementById('int-drawer-body').innerHTML = intRenderForm(null);
   document.getElementById('int-drawer-overlay').style.display = 'flex';
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
   setTimeout(() => document.getElementById('int-form-atendimento')?.focus(), 50);
 }
 
@@ -20076,7 +20093,7 @@ function intAbrirEditar(id) {
   document.getElementById('int-drawer-title').textContent = `Editar internação · ${i.atendimento}`;
   document.getElementById('int-drawer-body').innerHTML = intRenderForm(i);
   document.getElementById('int-drawer-overlay').style.display = 'flex';
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  lucideRefresh();
 }
 
 function intRenderForm(i) {
@@ -23918,11 +23935,10 @@ function globalFooterHTML() {
   `;
 }
 
-/** [Fase 5] Re-renderiza ícones Lucide após inserção de HTML dinâmico. */
+/** [Fase 5] Re-renderiza ícones Lucide após inserção de HTML dinâmico.
+ *  [2026-05-11] Wrapper antigo unificado com lucideRefresh (throttle compartilhado, sem race). */
 function refreshIcons() {
-  if (window.lucide && lucide.createIcons) {
-    try { lucide.createIcons(); } catch(e) {}
-  }
+  lucideRefresh();
 }
 
 /* ============================================================
