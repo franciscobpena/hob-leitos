@@ -9960,7 +9960,8 @@ const MOCK_INDICADORES = {
   meses: [
     { label: 'JAN/26', iso: '2026-01-01' },
     { label: 'FEV/26', iso: '2026-02-01' },
-    { label: 'MAR/26', iso: '2026-03-01' }
+    { label: 'MAR/26', iso: '2026-03-01' },
+    { label: 'ABR/26', iso: '2026-04-01' }
   ],
   itens: [
     {
@@ -9969,13 +9970,13 @@ const MOCK_INDICADORES = {
       nome: 'NEDOCs (Mediana)',
       unidade: 'score',
       polaridade: 'menor_melhor',
-      meta: { descricao: 'Reduzir 20%', valor: 270, min: null, max: null },
-      ddc: { valor: 337 },
-      medicoes: { '2026-01-01': 325, '2026-02-01': 242, '2026-03-01': 211 },
+      meta: { descricao: 'Reduzir 20%', valor: 218, min: null, max: null },
+      ddc: { valor: 273 },
+      medicoes: { '2026-01-01': 259, '2026-02-01': 263, '2026-03-01': 274, '2026-04-01': 257 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_baixo_risco', 'proj_ambientes_assistenciais', 'proj_pcp', 'proj_huddle']
+      projetos_vinculados: []
     },
     {
       id: 'ind_los_com_internacao',
@@ -9983,13 +9984,13 @@ const MOCK_INDICADORES = {
       nome: 'LOS COM Internação (Min)',
       unidade: 'min',
       polaridade: 'menor_melhor',
-      meta: { descricao: 'Reduzir 15%', valor: 1758, min: null, max: null },
-      ddc: { valor: 2068 },
-      medicoes: { '2026-01-01': 2280, '2026-02-01': 1740, '2026-03-01': 2290 },
+      meta: { descricao: 'Reduzir 15%', valor: 1716, min: null, max: null },
+      ddc: { valor: 2019 },
+      medicoes: { '2026-01-01': 1630, '2026-02-01': 1769, '2026-03-01': 1962, '2026-04-01': 1777 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_ucp', 'proj_intervalo_am_ah', 'proj_alta_10']
+      projetos_vinculados: []
     },
     {
       id: 'ind_los_sem_internacao',
@@ -9997,13 +9998,13 @@ const MOCK_INDICADORES = {
       nome: 'LOS SEM Internação (Min)',
       unidade: 'min',
       polaridade: 'menor_melhor',
-      meta: { descricao: 'Reduzir 10%', valor: 468, min: null, max: null },
-      ddc: { valor: 520 },
-      medicoes: { '2026-01-01': 394.8, '2026-02-01': 316, '2026-03-01': 307.24 },
+      meta: { descricao: 'Reduzir 10%', valor: 252.9, min: null, max: null },
+      ddc: { valor: 281.0 },
+      medicoes: { '2026-01-01': 207.0, '2026-02-01': 213.0, '2026-03-01': 225, '2026-04-01': 237 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_baixo_risco', 'proj_ambientes_assistenciais']
+      projetos_vinculados: []
     },
     {
       id: 'ind_tmp_origem_ps',
@@ -10011,13 +10012,13 @@ const MOCK_INDICADORES = {
       nome: 'TMP Origem PS (Dias)',
       unidade: 'dias',
       polaridade: 'menor_melhor',
-      meta: { descricao: 'Reduzir 10%', valor: 4.5, min: null, max: null },
-      ddc: { valor: 5.0 },
-      medicoes: { '2026-01-01': 1.3, '2026-02-01': 1.0, '2026-03-01': 6.02 },
+      meta: { descricao: 'Reduzir 10%', valor: 5.12, min: null, max: null },
+      ddc: { valor: 5.7 },
+      medicoes: { '2026-01-01': 5.7, '2026-02-01': 8.0, '2026-03-01': 7.64, '2026-04-01': 7.61 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_ucp', 'proj_baixo_risco', 'proj_intervalo_am_ah', 'proj_pcp', 'proj_alta_10', 'proj_huddle']
+      projetos_vinculados: []
     },
     {
       id: 'ind_fator_utilizacao',
@@ -10026,12 +10027,12 @@ const MOCK_INDICADORES = {
       unidade: '%',
       polaridade: 'banda',
       meta: { descricao: '60% – 85%', valor: null, min: 60, max: 85 },
-      ddc: { valor: 136.8 },
-      medicoes: { '2026-01-01': 414.0, '2026-02-01': 301.7, '2026-03-01': 24.4 },
+      ddc: { valor: 43.2 },
+      medicoes: { '2026-01-01': 81.7, '2026-02-01': 87.2, '2026-03-01': 85.4, '2026-04-01': 76.5 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_ambientes_assistenciais', 'proj_pcp']
+      projetos_vinculados: []
     },
     {
       id: 'ind_setup_leitos',
@@ -10039,13 +10040,13 @@ const MOCK_INDICADORES = {
       nome: 'Setup de Leitos (Min)',
       unidade: 'min',
       polaridade: 'menor_melhor',
-      meta: { descricao: 'Reduzir 10%', valor: 22.5, min: null, max: null },
-      ddc: { valor: 25 },
-      medicoes: { '2026-01-01': 21, '2026-02-01': 21, '2026-03-01': 40 },
+      meta: { descricao: 'Reduzir 10%', valor: 94.5, min: null, max: null },
+      ddc: { valor: 105 },
+      medicoes: { '2026-01-01': 49, '2026-02-01': 46, '2026-03-01': 38, '2026-04-01': 41 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_intervalo_am_ah', 'proj_alta_10']
+      projetos_vinculados: []
     },
     {
       id: 'ind_numero_kaizens',
@@ -10055,11 +10056,11 @@ const MOCK_INDICADORES = {
       polaridade: 'maior_melhor',
       meta: { descricao: '≥ 8', valor: 8, min: null, max: null },
       ddc: { valor: 0 },
-      medicoes: { '2026-01-01': 0, '2026-02-01': 0, '2026-03-01': 3 },
+      medicoes: { '2026-01-01': 0, '2026-02-01': 0, '2026-03-01': 1, '2026-04-01': 0 },
       responsavel: null,
       corresponsavel: null,
       confiabilidade: null,
-      projetos_vinculados: ['proj_ucp', 'proj_huddle']
+      projetos_vinculados: []
     }
   ]
 };
@@ -10070,16 +10071,18 @@ const MOCK_VOLUMETRIA = {
     { label: 'DEZ/25 (DDC)', iso: '2025-12-01' },
     { label: 'JAN/26',       iso: '2026-01-01' },
     { label: 'FEV/26',       iso: '2026-02-01' },
-    { label: 'MAR/26',       iso: '2026-03-01' }
+    { label: 'MAR/26',       iso: '2026-03-01' },
+    { label: 'ABR/26',       iso: '2026-04-01' }
   ],
   itens: [
-    { id: 'vol_atend_urg',     ordem: 1, nome: 'Atendimentos Urgência',     unidade: 'vol/mês',   destaque_grafico: true,  medicoes: { '2025-12-01': 4724, '2026-01-01': 3854, '2026-02-01': 3723, '2026-03-01': 4439 } },
-    { id: 'vol_intern_diaria', ordem: 2, nome: 'Internações Diárias (média)', unidade: 'média/dia', destaque_grafico: false, medicoes: { '2025-12-01': 29.0, '2026-01-01': 23.0, '2026-02-01': 22.0, '2026-03-01': 23 } },
-    { id: 'vol_leitos_ps',     ordem: 3, nome: 'Leitos Operacionais PS',     unidade: 'leitos',    destaque_grafico: false, medicoes: { '2025-12-01': 106,  '2026-01-01': 106,  '2026-02-01': 106,  '2026-03-01': 116 } },
-    { id: 'vol_dias_pcp',      ordem: 4, nome: 'Dias Ativação PCP',          unidade: 'dias',      destaque_grafico: false, medicoes: { '2025-12-01': 0,    '2026-01-01': null, '2026-02-01': null, '2026-03-01': 28 } },
-    { id: 'vol_obitos_24h',    ordem: 5, nome: 'Óbitos em até 24h',          unidade: 'qtd',       destaque_grafico: false, medicoes: { '2025-12-01': null, '2026-01-01': 12,   '2026-02-01': 6,    '2026-03-01': 3 } },
-    { id: 'vol_porta_medico',  ordem: 6, nome: 'Tempo Porta-Médico (Min)',   unidade: 'min',       destaque_grafico: false, medicoes: { '2025-12-01': 44,   '2026-01-01': 52,   '2026-02-01': 36,   '2026-03-01': 1.23 } },
-    { id: 'vol_giro_leitos',   ordem: 7, nome: 'Giro de Leitos',             unidade: 'giro',      destaque_grafico: false, medicoes: { '2025-12-01': 4.80, '2026-01-01': 6.49, '2026-02-01': 5.59, '2026-03-01': 6.39 } }
+    { id: 'vol_atend_urg',      ordem: 1, nome: 'Atendimentos Urgência',     unidade: 'vol/mês',   destaque_grafico: true,  medicoes: { '2025-12-01': 7280, '2026-01-01': 7543, '2026-02-01': 7346, '2026-03-01': 8506, '2026-04-01': 7973 } },
+    { id: 'vol_intern_diaria',  ordem: 2, nome: 'Internações Diárias (média)', unidade: 'média/dia', destaque_grafico: false, medicoes: { '2025-12-01': 31.0, '2026-01-01': 39.0, '2026-02-01': 39.0, '2026-03-01': 40,   '2026-04-01': 36 } },
+    { id: 'vol_leitos_ps',      ordem: 3, nome: 'Leitos Operacionais PS',     unidade: 'leitos',    destaque_grafico: false, medicoes: { '2025-12-01': 408,  '2026-01-01': 408,  '2026-02-01': 358,  '2026-03-01': 358,  '2026-04-01': 358 } },
+    { id: 'vol_obitos_24h',     ordem: 4, nome: 'Óbitos em até 24h',          unidade: 'qtd',       destaque_grafico: false, medicoes: { '2025-12-01': 3,    '2026-01-01': 10,   '2026-02-01': 10,   '2026-03-01': 12,   '2026-04-01': 12 } },
+    { id: 'vol_porta_medico',   ordem: 5, nome: 'Tempo Porta-Médico (Min)',   unidade: 'min',       destaque_grafico: false, medicoes: { '2025-12-01': 98,   '2026-01-01': 84,   '2026-02-01': 94,   '2026-03-01': 105,  '2026-04-01': 101 } },
+    { id: 'vol_giro_leitos',    ordem: 6, nome: 'Giro de Leitos',             unidade: 'giro',      destaque_grafico: false, medicoes: { '2025-12-01': 7.19, '2026-01-01': 7.15, '2026-02-01': 6.43, '2026-03-01': 6.97, '2026-04-01': 6.68 } },
+    { id: 'vol_tmp_hospitalar', ordem: 7, nome: 'TMP Hospitalar (Dias)',      unidade: 'dias',      destaque_grafico: false, medicoes: { '2025-12-01': null, '2026-01-01': 6.44, '2026-02-01': 6.45, '2026-03-01': 6.37, '2026-04-01': 6.43 } },
+    { id: 'vol_dias_pcp',       ordem: 8, nome: 'Dias Ativação PCP',          unidade: 'dias',      destaque_grafico: false, medicoes: { '2025-12-01': 17,   '2026-01-01': 21,   '2026-02-01': 10,   '2026-03-01': 22,   '2026-04-01': 16 } }
   ]
 };
 
