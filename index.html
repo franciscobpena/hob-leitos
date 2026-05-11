@@ -10110,103 +10110,120 @@ const MOCK_PROJETOS = {
   ],
   projetos: [
     {
-      id: 'proj_ucp',
-      raia: 'saida',
-      nome: 'UCP',
-      responsavel: 'Ramony',
-      ordem: 1,
-      acoes: [
-        { id: 'ucp_a1', ordem: 1, descricao: 'Definir e institucionalizar critérios de admissão para UCP e governança com NIR',                          responsavel: 'Ramony',  progresso_pct: 100, prazo: '2026-02-28', status: 'concluido' },
-        { id: 'ucp_a2', ordem: 2, descricao: 'Implementar indicador de pacientes com alta em até 72h sobre o total do período',                         responsavel: 'Ramony',  progresso_pct: 100, prazo: '2026-03-06', status: 'concluido' },
-        { id: 'ucp_a3', ordem: 3, descricao: 'Implementar/revisar quadro Kanban para previsão de alta com pendências e equipe',                         responsavel: 'Larissa', progresso_pct: 100, prazo: '2026-03-06', status: 'concluido' },
-        { id: 'ucp_a4', ordem: 4, descricao: 'Incluir pacientes da UCP na visita multiprofissional',                                                    responsavel: 'Bárbara', progresso_pct: 80,  prazo: '2026-03-27', status: 'em_andamento' }
-      ]
-    },
-    {
-      id: 'proj_baixo_risco',
-      raia: 'passagem',
-      nome: 'Baixo Risco',
-      responsavel: 'Maria',
-      ordem: 2,
-      acoes: [
-        { id: 'br_a1', ordem: 1, descricao: 'Readequar quadros Kanban no PS para apoio do Fluxista (Kanban PS digital na TV)',                          responsavel: 'Maria',   progresso_pct: null, prazo: '2026-04-10', status: 'em_atraso' },
-        { id: 'br_a2', ordem: 2, descricao: 'Elaborar rotina diária do fluxista e treinar atividades e acompanhamentos',                                 responsavel: 'Maria',   progresso_pct: 100, prazo: '2026-01-30', status: 'concluido' },
-        { id: 'br_a3', ordem: 3, descricao: 'Definir responsáveis pela governança do Fast-Track e levantamento dos números',                            responsavel: 'Dani',    progresso_pct: 100, prazo: '2026-03-20', status: 'concluido' },
-        { id: 'br_a4', ordem: 4, descricao: 'Definir e operacionalizar regras e alçadas para solicitações de tomografia',                                responsavel: 'Bárbara', progresso_pct: 100, prazo: '2026-03-17', status: 'concluido' },
-        { id: 'br_a5', ordem: 5, descricao: 'Reavaliar medicações substitutas de EV por IM ou Oral',                                                     responsavel: 'Bárbara', progresso_pct: 100, prazo: '2026-01-19', status: 'concluido' },
-        { id: 'br_a6', ordem: 6, descricao: 'Readequar critérios e tipos de pendências para acompanhamento do paciente',                                 responsavel: 'Tatiane', progresso_pct: 100, prazo: '2026-03-12', status: 'concluido' }
-      ]
-    },
-    {
-      id: 'proj_intervalo_am_ah',
-      raia: 'saida',
-      nome: 'Intervalo A.M. e A.H.',
-      responsavel: 'Giulianne',
-      ordem: 3,
-      acoes: [
-        { id: 'iam_a1', ordem: 1, descricao: 'Implementar espaço de alta com critérios de elegibilidade, processo e contingência',                       responsavel: 'Ramony',     progresso_pct: null, prazo: '2026-05-08', status: 'em_andamento' },
-        { id: 'iam_a2', ordem: 2, descricao: 'Implementar quadro Kamishibai e governança de Alta Médica/Hospitalar com líderes por área',                responsavel: 'Giulianne',  progresso_pct: null, prazo: '2026-03-06', status: 'em_atraso' },
-        { id: 'iam_a3', ordem: 3, descricao: 'Estabelecer processo/rito de acompanhamento do quadro',                                                    responsavel: 'Larissa',    progresso_pct: null, prazo: '2026-03-06', status: 'em_atraso' },
-        { id: 'iam_a4', ordem: 4, descricao: 'Estabelecer e monitorar indicador de tempo Alta Médica vs Hospitalar com causas de atraso',                responsavel: 'Bárbara',    progresso_pct: null, prazo: '2026-03-16', status: 'em_atraso' }
-      ]
-    },
-    {
-      id: 'proj_ambientes_assistenciais',
-      raia: 'passagem',
-      nome: 'Ambientes assistenciais',
-      responsavel: 'Larissa',
-      ordem: 4,
-      acoes: [
-        { id: 'amb_a1', ordem: 1, descricao: 'Readequar espaço UDM para Retaguarda do PS e atualizar nomenclatura no sistema',                           responsavel: 'Larissa', progresso_pct: 100, prazo: '2026-03-06', status: 'concluido' },
-        { id: 'amb_a2', ordem: 2, descricao: 'Implementar Kanban Retaguarda do PS (meta 24h, vermelho após 48h)',                                        responsavel: 'Larissa', progresso_pct: 50,  prazo: '2026-03-06', status: 'em_andamento' },
-        { id: 'amb_a3', ordem: 3, descricao: 'Readequar sala de medicação para UDM com meta de permanência 6h',                                          responsavel: 'Larissa', progresso_pct: 100, prazo: '2026-03-06', status: 'concluido' },
-        { id: 'amb_a4', ordem: 4, descricao: 'Revisar Kanban na UDM com meta de permanência 6h',                                                         responsavel: 'Larissa', progresso_pct: 100, prazo: '2026-03-06', status: 'concluido' },
-        { id: 'amb_a5', ordem: 5, descricao: 'Implementar adesivos de segmentação de fluxo do PS',                                                       responsavel: 'Bárbara', progresso_pct: 30,  prazo: '2026-03-20', status: 'em_andamento' }
-      ]
-    },
-    {
-      id: 'proj_pcp',
+      id: 'HOB_proj_bc',
       raia: 'governanca',
-      nome: 'PCP',
-      responsavel: 'Giulianne',
-      ordem: 5,
+      nome: 'Kaizen BC — Aumento do volume de cirurgias e rotina gerencial do bloco',
+      responsavel: null,
+      ordem: 1,
+      indicadores_vinculados: ['HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
       acoes: [
-        { id: 'pcp_a1', ordem: 1, descricao: 'Revisar critérios e gatilhos do PCP',                                                                       responsavel: 'Giulianne', progresso_pct: null, prazo: '2026-03-18', status: 'estacionamento_ideias' },
-        { id: 'pcp_a2', ordem: 2, descricao: 'Rever ações por nível de ativação do PCP e áreas',                                                          responsavel: 'Giulianne', progresso_pct: null, prazo: '2026-03-18', status: 'estacionamento_ideias' },
-        { id: 'pcp_a3', ordem: 3, descricao: 'Treinar e implementar novo PCP com as áreas',                                                               responsavel: 'Giulianne', progresso_pct: null, prazo: '2026-03-20', status: 'estacionamento_ideias' },
-        { id: 'pcp_a4', ordem: 4, descricao: 'Monitorar quantidade de ativação por níveis e tempo ativado, recalibrando após 4 semanas',                  responsavel: 'Giulianne', progresso_pct: null, prazo: '2026-04-30', status: 'estacionamento_ideias' },
-        { id: 'pcp_a5', ordem: 5, descricao: 'Sugestão de ações do PCP: Rever parecer',                                                                   responsavel: null,        progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' }
+        { id: 'HOB_bc_a1',  ordem: 1,  descricao: 'Validar proposta piloto do rebalanceamento de escalas cirúrgicas (ortopédicas) e extensão do bloco 1 até às 23:00', responsavel: 'Samuel', progresso_pct: 0, prazo: '2026-03-20', status: 'estacionamento_ideias', observacao: 'Ex. 4 cirurgias x 5 = 20, 80 cirurgias/mês. Aguarda reunião' },
+        { id: 'HOB_bc_a2',  ordem: 2,  descricao: 'Avaliar balanceamento da escala do anestesista podendo readequar em dias/horários de pico', responsavel: 'Samuel', progresso_pct: 0, prazo: '2026-03-20', status: 'estacionamento_ideias', observacao: 'Aguarda reunião' },
+        { id: 'HOB_bc_a3',  ordem: 3,  descricao: 'Avaliar troca de demandas entre cirurgia ortopédica e outra especialidade', responsavel: 'Samuel', progresso_pct: 0, prazo: '2026-03-20', status: 'em_andamento', observacao: 'Em andamento' },
+        { id: 'HOB_bc_a4',  ordem: 4,  descricao: 'Realizar projeto piloto (Bloco do 1º) a partir do mês de abril para funcionar n salas para ortopedia', responsavel: 'Samuel', progresso_pct: 0, prazo: '2026-04-10', status: 'estacionamento_ideias', observacao: 'Aumento % de cirurgias e faturamento. Aguarda reunião' },
+        { id: 'HOB_bc_a5',  ordem: 5,  descricao: 'Analisar taxa de ocupação do mês de fevereiro-2026 e março-2026, identificando os motivos de baixa ocupação de sala', responsavel: 'Fernando', progresso_pct: 0, prazo: null, status: 'estacionamento_ideias', observacao: 'Verificar o atraso da primeira cirurgia para avaliar se impacta na ocupação' },
+        { id: 'HOB_bc_a6',  ordem: 6,  descricao: 'Atualizar indicadores do Lean Fase 2 retroativo para discussão e volumetria das cirurgias bem como os procedimentos (Baseline: Fevereiro e Março/2026)', responsavel: 'Fernando', progresso_pct: 0, prazo: '2026-04-05', status: 'em_atraso', observacao: 'Surgiu dúvida da equipe' },
+        { id: 'HOB_bc_a7',  ordem: 7,  descricao: 'Implementar e medir KPIs a partir de abril de 2026 definidos com consultores Lean', responsavel: 'Roziane', progresso_pct: 0, prazo: '2026-04-25', status: 'em_andamento', observacao: 'Indicadores: tx ocupação por sala (BC I e BC II); tx cancelamento cirurgia por especialidade, com motivo; tx substituição cirurgia; tempo médio atraso primeira cirurgia; volume de cirurgia por sala; tempo de sala retida esperando CTI ou retido geral. Em andamento' },
+        { id: 'HOB_bc_a8',  ordem: 8,  descricao: 'Realizar apresentação com Superintendência e Diretoria em relação à proposta do Projeto Acadêmico de Extensão (02 cirurgiões ortopédicos)', responsavel: 'Leonardo Bretz / Dayane GENP', progresso_pct: 0, prazo: '2026-04-25', status: 'em_andamento', observacao: '1ª Etapa — Pactuação GENP Projeto Acadêmico. Reunião agendada' },
+        { id: 'HOB_bc_a9',  ordem: 9,  descricao: 'Realizar contato com a Faculdade para viabilizar Projeto Acadêmico de Extensão', responsavel: 'Leonardo Bretz / Dayane GENP', progresso_pct: 0, prazo: '2026-06-01', status: 'estacionamento_ideias', observacao: '2ª Etapa — Até 31/05/2026. Aguarda reunião' },
+        { id: 'HOB_bc_a10', ordem: 10, descricao: 'Estruturar e iniciar com a equipe o Projeto Acadêmico de Extensão', responsavel: 'Leonardo Bretz / Dayane GENP', progresso_pct: 0, prazo: '2026-07-01', status: 'estacionamento_ideias', observacao: '3ª Etapa — Até 30/06/2026. Aguarda reunião' }
       ]
     },
     {
-      id: 'proj_alta_10',
+      id: 'HOB_proj_boarding',
+      raia: 'governanca',
+      nome: 'Kaizen Caracterização do Boarding',
+      responsavel: null,
+      ordem: 2,
+      indicadores_vinculados: ['HOB_ind_nedocs', 'HOB_ind_los_com_internacao', 'HOB_ind_los_sem_internacao', 'HOB_ind_numero_kaizens'],
+      acoes: [
+        { id: 'HOB_boarding_a1', ordem: 1, descricao: 'Trazer na próxima visita do Lean os indicadores de abril da caracterização do Boarding e principais insights', responsavel: 'Thamyres', progresso_pct: 0, prazo: '2026-04-30', status: 'em_atraso', observacao: null },
+        { id: 'HOB_boarding_a2', ordem: 2, descricao: 'Relatório da PBH', responsavel: 'Érica', progresso_pct: 0, prazo: '2026-04-24', status: 'em_andamento', observacao: 'Em andamento' },
+        { id: 'HOB_boarding_a3', ordem: 3, descricao: 'Relatório pelo DRG', responsavel: 'Érica', progresso_pct: 0, prazo: null, status: 'em_andamento', observacao: 'Em andamento' }
+      ]
+    },
+    {
+      id: 'HOB_proj_trauma',
+      raia: 'passagem',
+      nome: 'Kaizen Linha do Trauma',
+      responsavel: null,
+      ordem: 3,
+      indicadores_vinculados: ['HOB_ind_nedocs', 'HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
+      acoes: [
+        { id: 'HOB_trauma_a1', ordem: 1, descricao: 'Monitorar e apurar KPIs do Kaizen do Trauma', responsavel: 'Thamyres', progresso_pct: 0, prazo: '2026-04-30', status: 'em_andamento', observacao: 'Em andamento' },
+        { id: 'HOB_trauma_a2', ordem: 2, descricao: 'POP trauma', responsavel: 'Miguel', progresso_pct: null, prazo: '2026-06-30', status: 'em_andamento', observacao: 'Em andamento' }
+      ]
+    },
+    {
+      id: 'HOB_proj_coluna',
+      raia: 'passagem',
+      nome: 'Kaizen Linha de Cuidado Coluna',
+      responsavel: null,
+      ordem: 4,
+      indicadores_vinculados: ['HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_fator_utilizacao', 'HOB_ind_numero_kaizens'],
+      acoes: [
+        { id: 'HOB_coluna_a1', ordem: 1, descricao: 'NCG retomar planilha para rankear a prioridade por paciente', responsavel: 'Marciléia', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: 'Marciléia está fazendo; Amanda pontuar, quando verificar que não tem. Solicitação de imagem, às vezes a equipe não tá sabendo, mudou de setor etc; pacientes não cadastrados e sem expectativa de cirurgia; pacientes que se recusam a ir embora' },
+        { id: 'HOB_coluna_a2', ordem: 2, descricao: 'Mapear as vagas de neurocirurgia das enfermarias, as cirurgias que realizam, e percentual de cancelamento de Bloco', responsavel: 'Thamyres / Marciléia', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_coluna_a3', ordem: 3, descricao: 'Rever horizontal', responsavel: 'Thamyres', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_coluna_a4', ordem: 4, descricao: 'Casos de coluna que chegarem na porta com papel de encaminhamento de outro município, separar para ofício da Superintendência', responsavel: 'Thamyres', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_coluna_a5', ordem: 5, descricao: 'Termo de orientação de coluna', responsavel: 'Thamyres / Erica', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null }
+      ]
+    },
+    {
+      id: 'HOB_proj_matmed',
       raia: 'saida',
-      nome: 'Alta 10',
+      nome: 'Kaizen Mat & Med',
+      responsavel: null,
+      ordem: 5,
+      indicadores_vinculados: ['HOB_ind_nedocs', 'HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
+      acoes: [
+        { id: 'HOB_matmed_a1', ordem: 1, descricao: 'Revisar processo de liberação e baixa do medicamento controlado e implementar (Clínica médica)', responsavel: 'Juliana', progresso_pct: 0, prazo: '2026-04-29', status: 'em_andamento', observacao: 'Fez reunião com as farmacêuticas para viabilizar retomada. Inviável. Alternativa: entrega pela janela e pela porta' },
+        { id: 'HOB_matmed_a2', ordem: 2, descricao: '5S na farmácia: organizando materiais com maior saída e Kanbans (sinalizações) na enfermaria (Curva A/B/C — Mat&Med e KITs padrão)', responsavel: 'Juliana', progresso_pct: 0, prazo: '2026-05-04', status: 'em_atraso', observacao: 'PRIORIDADE — itens críticos (x, y, z)' },
+        { id: 'HOB_matmed_a3', ordem: 3, descricao: 'Sinalização visual Kanban nas prateleiras com relação ao estoque físico', responsavel: 'Juliana', progresso_pct: 0, prazo: '2026-05-04', status: 'em_atraso', observacao: 'PRIORIDADE' },
+        { id: 'HOB_matmed_a4', ordem: 4, descricao: 'Levantar medicamentos que mais impactam na alta para padronização de Kits', responsavel: 'Juliana / Marina', progresso_pct: 0, prazo: '2026-04-29', status: 'estacionamento_ideias', observacao: 'estacionamento de ideias' },
+        { id: 'HOB_matmed_a5', ordem: 5, descricao: 'Integração GRP-SIGRAH (acompanhar, cobrar)', responsavel: 'Juliana / Mateus / Diretoria', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null }
+      ]
+    },
+    {
+      id: 'HOB_proj_alta10',
+      raia: 'saida',
+      nome: 'Kaizen Alta Oportuna até 10h',
       responsavel: null,
       ordem: 6,
+      indicadores_vinculados: ['HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_fator_utilizacao', 'HOB_ind_numero_kaizens'],
       acoes: [
-        { id: 'a10_a1', ordem: 1, descricao: 'Elaborar indicador de alta médica (%) por horário',                                                         responsavel: null, progresso_pct: null, prazo: '2026-03-18', status: 'estacionamento_ideias' },
-        { id: 'a10_a2', ordem: 2, descricao: 'Recrutar grupo multidisciplinar líder da mudança',                                                          responsavel: null, progresso_pct: null, prazo: '2026-03-20', status: 'estacionamento_ideias' },
-        { id: 'a10_a3', ordem: 3, descricao: 'Às 7h10, revisar painel + 3 maiores atrasos do dia anterior',                                               responsavel: null, progresso_pct: null, prazo: '2026-03-27', status: 'estacionamento_ideias' },
-        { id: 'a10_a4', ordem: 4, descricao: 'Implantar passagem de plantão diária, round 7h30, ritual 10min, gestão visual, WhatsApp, reunião mensal',   responsavel: null, progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' },
-        { id: 'a10_a5', ordem: 5, descricao: 'Fixar kit de artes (renovar 60 dias); painel de resultados atualizado às sextas',                           responsavel: null, progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' },
-        { id: 'a10_a6', ordem: 6, descricao: 'Formalizar checklist D-1, microfluxo, horário-alvo e papéis em documentos oficiais',                        responsavel: null, progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' },
-        { id: 'a10_a7', ordem: 7, descricao: 'Entregar microfluxo impresso no primeiro plantão de novos profissionais',                                   responsavel: null, progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' },
-        { id: 'a10_a8', ordem: 8, descricao: 'Indicadores no painel permanente, auditoria semanal com Pareto, relatório trimestral',                      responsavel: null, progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' },
-        { id: 'a10_a9', ordem: 9, descricao: 'Garantir pelo menos 2 pessoas treinadas por unidade',                                                        responsavel: null, progresso_pct: null, prazo: null,         status: 'estacionamento_ideias' }
+        { id: 'HOB_alta10_a1', ordem: 1, descricao: 'Revisar Kanbans e adicionar faróis', responsavel: 'Camila Vaz', progresso_pct: 0, prazo: '2026-04-12', status: 'em_andamento', observacao: 'Em andamento. Já feito na Ortopedia, Comanejo, Cirurgia Geral, Vascular, Neurocirurgia. ACOM irá apoiar' },
+        { id: 'HOB_alta10_a2', ordem: 2, descricao: 'Implementar governança do Comitê conforme estruturado', responsavel: 'Marina', progresso_pct: 0, prazo: '2026-04-12', status: 'em_andamento', observacao: 'Já iniciou. Reuniões do comitê são quinzenais, às 5ª feiras, 10h' },
+        { id: 'HOB_alta10_a3', ordem: 3, descricao: 'Incluir Kanban na rotina do Residente: passar revisão alta, passar pendências', responsavel: 'Vanessa', progresso_pct: 0, prazo: '2026-04-25', status: 'em_andamento', observacao: 'Próxima visita dos consultores, gemba no quadro da Vascular, no segundo dia da visita, às 10h' },
+        { id: 'HOB_alta10_a4', ordem: 4, descricao: 'Reunir coordenadores e preceptores para falar sobre o Kanban junto a EGA e liderança', responsavel: 'Vanessa', progresso_pct: 0, prazo: '2026-04-25', status: 'em_andamento', observacao: 'Em andamento. Já Vascular, CG. NCG marcada; aula do Lean, com coord. e preceptores residência, agendar (convite mais ampliado)' },
+        { id: 'HOB_alta10_a5', ordem: 5, descricao: 'Rever possibilidade de sala de alta', responsavel: 'Diretoria / NIR', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_alta10_a6', ordem: 6, descricao: 'Agendar reunião coordenadores e preceptores, dia 12/05, para orientações da alta até às 10h', responsavel: 'Camila Vaz', progresso_pct: null, prazo: '2026-04-12', status: 'em_atraso', observacao: null },
+        { id: 'HOB_alta10_a7', ordem: 7, descricao: 'POP/fluxo para plantonistas fazerem a alta no período noturno (são 3, 2 residentes e 1 preceptor)', responsavel: 'Camila Vaz', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null }
       ]
     },
     {
-      id: 'proj_huddle',
-      raia: 'governanca',
-      nome: 'Huddle',
-      responsavel: 'Maria',
+      id: 'HOB_proj_exames_imagem',
+      raia: 'saida',
+      nome: 'Kaizen Exames de Imagem',
+      responsavel: null,
       ordem: 7,
+      indicadores_vinculados: ['HOB_ind_los_com_internacao', 'HOB_ind_los_sem_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
       acoes: [
-        { id: 'hud_a1', ordem: 1, descricao: 'Revisar rotina da daily huddle com a equipe',          responsavel: 'Maria', progresso_pct: 100, prazo: '2026-02-27', status: 'concluido' },
-        { id: 'hud_a2', ordem: 2, descricao: 'Implementar gestão à vista do Huddle',                  responsavel: 'Maria', progresso_pct: 100, prazo: '2026-02-27', status: 'concluido' },
-        { id: 'hud_a3', ordem: 3, descricao: 'Rodar pesquisa qualitativa com o time',                responsavel: 'Maria', progresso_pct: 0,   prazo: '2026-05-08', status: 'em_andamento' }
+        { id: 'HOB_exames_imagem_a1', ordem: 1, descricao: 'Realizar comunicado institucional com a diretoria', responsavel: 'Mara', progresso_pct: 0, prazo: '2026-04-05', status: 'em_atraso', observacao: 'Tomografia no período noturno; verificar com Mara; prazo de 48h para marcar' },
+        { id: 'HOB_exames_imagem_a2', ordem: 2, descricao: 'Implementar agenda noturna como rotina', responsavel: 'Marta', progresso_pct: 0, prazo: '2026-04-10', status: 'em_atraso', observacao: 'Tomografia' },
+        { id: 'HOB_exames_imagem_a3', ordem: 3, descricao: 'Comunicar equipe médica as pactuações acordadas e processo', responsavel: 'Marta', progresso_pct: 0, prazo: '2026-04-08', status: 'em_atraso', observacao: 'Raio-X (superlotação do exame na parte da tarde; realizar no início da manhã ou noturno)' },
+        { id: 'HOB_exames_imagem_a4', ordem: 4, descricao: 'Estipular horários padrão para raio-x dos pacientes internados e avisar quais exames são prioridade', responsavel: 'Marta', progresso_pct: 0, prazo: '2026-04-10', status: 'em_atraso', observacao: 'Raio-X' },
+        { id: 'HOB_exames_imagem_a5', ordem: 5, descricao: 'Montar um fluxo de solicitação e liberação via forms/planilha online ou via MV', responsavel: 'Marta', progresso_pct: 0, prazo: '2026-04-12', status: 'em_atraso', observacao: 'Raio-X, separar horários por setor, fazer a agenda para cada clínica' }
       ]
+    },
+    {
+      id: 'HOB_proj_exames_cultura',
+      raia: 'saida',
+      nome: 'Kaizen Exames de Cultura',
+      responsavel: null,
+      ordem: 8,
+      indicadores_vinculados: ['HOB_ind_nedocs', 'HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
+      acoes: []
     }
   ]
 };
@@ -22906,10 +22923,11 @@ function getAllProjetosComOverrides() {
 /** Retorna indicadores cujo projetos_vinculados contém este projetoId.
  *  [Fase 15] Inclui também indicadores que esse projeto declara em indicadores_vinculados
  *  (vínculo via form Novo Projeto). União sem duplicatas.
- *  [HOB 2026-05-08] MOCK_DATA.indicadores é HMSA-específico — outros hospitais retornam []. */
+ *  [HOB 2026-05-11] HMSA e HOB têm MOCK próprio com indicadores+projetos vinculados. */
 function getIndicadoresByProjeto(projetoId) {
-  // Multi-tenant guard: mocks só pra HMSA
-  if (typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID !== 'HMSA') return [];
+  // Multi-tenant guard: hospitais com MOCK próprio (HMSA + HOB) renderizam vínculos
+  const HOSPITAIS_COM_MOCK = ['HMSA', 'HOB'];
+  if (typeof HOSPITAL_ID !== 'undefined' && !HOSPITAIS_COM_MOCK.includes(HOSPITAL_ID)) return [];
   const proj = getProjetoComOverrides(projetoId);
   // [Fase 46] Se proj define explicitamente indicadores_vinculados (via override
   // ou form de criação), o array é AUTORITATIVO (override pode remover reverse-only).
@@ -23894,12 +23912,11 @@ const DataLayer = (function() {
     },
 
     /** Lista IDs de todos os projetos visíveis (mock + server net-new + override _is_new).
-     *  [HOB 2026-05-08] Multi-tenant fix: MOCK_DATA é HMSA-específico (projetos UCP/Larissa/Ramony/etc.).
-     *  Outros hospitais (HOB) veem APENAS dados reais do banco. Empty state força equipe a criar
-     *  projetos próprios em vez de herdar lista HMSA. */
+     *  [HOB 2026-05-11] HMSA e HOB têm MOCK próprio. Outros hospitais veem só server+override. */
     listProjetoIds() {
       const ids = new Set();
-      if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID === 'HMSA') {
+      const HOSPITAIS_COM_MOCK = ['HMSA', 'HOB'];
+      if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAIS_COM_MOCK.includes(HOSPITAL_ID)) {
         MOCK_DATA.projetos.projetos.forEach(p => ids.add(p.id));
       }
       const sd = (typeof KaizenSync !== 'undefined' && KaizenSync.getState && KaizenSync.getState().serverData) || null;
@@ -23911,11 +23928,12 @@ const DataLayer = (function() {
     },
 
     /** Lista todas ações visíveis de um projeto (mock + server + override).
-     *  [HOB 2026-05-08] MOCK_DATA é HMSA-específico — outros hospitais veem só server+override. */
+     *  [HOB 2026-05-11] HMSA e HOB têm MOCK próprio. Outros hospitais veem só server+override. */
     listAcoesByProjeto(projId) {
       const ids = new Set();
-      // Mock (HMSA only)
-      if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID === 'HMSA') {
+      // Mock (HMSA + HOB)
+      const HOSPITAIS_COM_MOCK = ['HMSA', 'HOB'];
+      if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAIS_COM_MOCK.includes(HOSPITAL_ID)) {
         const p = MOCK_DATA.projetos.projetos.find(p => p.id === projId);
         if (p) p.acoes.forEach(a => ids.add(a.id));
       }
