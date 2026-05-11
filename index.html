@@ -21764,16 +21764,11 @@ function renderVolumetriaTabela() {
 
 /** Renderiza chart de barras (itens com destaque_grafico=true). */
 function renderVolumetriaChart() {
-  console.log('[VolChart] iniciando render');
   const canvas = document.getElementById('chart-volumetria');
-  console.log('[VolChart] canvas:', canvas);
-  console.log('[VolChart] typeof Chart:', typeof Chart);
-  if (!canvas || typeof Chart === 'undefined') { console.warn('[VolChart] return cedo: canvas ou Chart ausente'); return; }
+  if (!canvas || typeof Chart === 'undefined') return;
   const data = MOCK_DATA.volumetria;
-  console.log('[VolChart] MOCK itens:', data.itens.length, 'meses:', data.meses.length);
   const itensDestaque = data.itens.filter(i => i.destaque_grafico);
-  console.log('[VolChart] itensDestaque:', itensDestaque.length, itensDestaque.map(i => i.id));
-  if (itensDestaque.length === 0) { console.warn('[VolChart] return cedo: nenhum item com destaque_grafico'); return; }
+  if (itensDestaque.length === 0) return;
 
   // [Fase 39] alinha com a tabela: sem DDC (dez/25)
   const mesesVisiveis = data.meses.filter(m => m.iso >= '2026-01-01');
@@ -21784,33 +21779,27 @@ function renderVolumetriaChart() {
     backgroundColor: '#0D9488',
     borderRadius: 4
   }));
-  console.log('[VolChart] labels:', labels, 'datasets:', JSON.stringify(datasets));
 
-  try {
-    // [Fase 46] cleanup defensivo: captura instância órfã vinculada ao canvas
-    // mesmo quando _chartsFase1.volumetria está null (evita "Canvas is already in use").
-    const existing = Chart.getChart(canvas);
-    if (existing) { console.log('[VolChart] destruindo instância órfã'); existing.destroy(); }
-    _chartsFase1.volumetria = new Chart(canvas, {
-      type: 'bar',
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: itensDestaque.length > 1, labels: { color: '#94A3B8' } },
-          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } }
-        },
-        scales: {
-          x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { beginAtZero: true, ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-        }
+  // [Fase 46] cleanup defensivo: captura instância órfã vinculada ao canvas
+  // mesmo quando _chartsFase1.volumetria está null (evita "Canvas is already in use").
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+  _chartsFase1.volumetria = new Chart(canvas, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: itensDestaque.length > 1, labels: { color: '#94A3B8' } },
+        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { beginAtZero: true, ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
       }
-    });
-    console.log('[VolChart] new Chart() OK — instância criada');
-  } catch (err) {
-    console.error('[VolChart] erro criando chart:', err);
-  }
+    }
+  });
 }
 
 /** Render conjunto da view Indicadores (tabela executiva + volumetria). */
