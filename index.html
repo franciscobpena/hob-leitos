@@ -22738,9 +22738,11 @@ function abrirRegistrarMesVolumetria() {
 function renderIndicadores() {
   const cont = document.getElementById('ind-tabela-container');
   if (!cont) return;
-  // [HOB 2026-05-08] Multi-tenant guard: MOCK_DATA.indicadores é HMSA-específico (lista de itens
-  // hardcoded). Outros hospitais veem empty state até cadastrarem indicadores próprios.
-  if (typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID !== 'HMSA') {
+  // [HOB 2026-05-11] Guard atualizado: MOCK_DATA.indicadores agora contém dados HOB próprios
+  // (substituídos in-place 2026-05-10). HMSA e HOB renderizam normalmente; futuros hospitais
+  // (HMAGR, etc.) ainda veem empty state até MOCK ser estendido pra eles também.
+  const HOSPITAIS_COM_MOCK_INDICADORES = ['HMSA', 'HOB'];
+  if (typeof HOSPITAL_ID !== 'undefined' && !HOSPITAIS_COM_MOCK_INDICADORES.includes(HOSPITAL_ID)) {
     cont.innerHTML = `
       <div style="padding:32px 16px;text-align:center;color:var(--textMuted);font-style:italic;">
         Indicadores ainda não cadastrados pra ${HOSPITAL_ID}.<br>
