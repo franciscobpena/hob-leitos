@@ -16309,7 +16309,7 @@ function switchView(view, subView, subSubView) {
   if (view === 'gestao-leitos' && !subView) subView = 'dashboard';  // default sub
   if (view === 'analise-boarding' && !subView) subView = 'inserir';  // [Onda 5] default sub apos remocao de visao-geral
   if (view === 'internacoes' && !subView) subView = 'lista';  // [Fase 52] default sub
-  if (view === 'retaguarda-ps' && !subView) subView = 'fila';  // [Entrega 2 — 2026-05-07] default sub
+  if (view === 'retaguarda-ps' && !subView) subView = (typeof HOSPITAL_ID !== 'undefined' && HOSPITAL_ID === 'HOB') ? 'cards' : 'fila';  // [HOB 2026-05-11] Default = Leitos no HOB (Comanejo carga em massa via foto Kanban); HMSA/HJXXIII/HMAGR mantém Fila default
   currentView = view;
   currentSubView = subView || null;
   currentSubSubView = subSubView || null;
