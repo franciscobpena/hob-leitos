@@ -19022,13 +19022,17 @@ async function insSalvarAddCadastro(dim) {
   try {
     const userName = ((typeof getUserName === 'function' && getUserName()) || 'manual');
     const id = `${HOSPITAL_ID}_${info.prefix}_${cadSlugify(nome)}`;
-    const ordem = (AB.cadastro[info.collection] || [])
-      .map(x => x.ordem || 0).reduce((a,b) => Math.max(a,b), 0) + 1;
     const payload = {
-      id, hospital_id: HOSPITAL_ID, ordem, ativo: true,
+      id, hospital_id: HOSPITAL_ID, ativo: true,
       created_by: userName, updated_by: userName
     };
     payload[info.nomeField] = nome;
+    // [Fix 2026-05-11] cadastro_diagnosticos não tem coluna `ordem` (só esp/tc/uo têm).
+    // Bug propagado de HMSA via clonagem; mesmo INSERT retornava HTTP 400 (42703).
+    if (dim !== 'diag') {
+      payload.ordem = (AB.cadastro[info.collection] || [])
+        .map(x => x.ordem || 0).reduce((a,b) => Math.max(a,b), 0) + 1;
+    }
     if (dim === 'diag') payload.status = 'aprovado'; // MVP: entra direto, fila de revisão (Listas) foi removida na Fase 54
     const resp = await fetch(`${SB_URL}/rest/v1/${info.tabela}`, {
       method: 'POST',
