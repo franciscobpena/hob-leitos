@@ -10223,7 +10223,49 @@ const MOCK_PROJETOS = {
       responsavel: null,
       ordem: 8,
       indicadores_vinculados: ['HOB_ind_nedocs', 'HOB_ind_los_com_internacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
-      acoes: []
+      acoes: [
+        { id: 'HOB_exames_cultura_a1', ordem: 1, descricao: 'Definir responsáveis pelas ações 2 e 3', responsavel: 'Camila Moura', progresso_pct: 0, prazo: null, status: 'estacionamento_ideias', observacao: 'Primeira ação - definir líderes' },
+        { id: 'HOB_exames_cultura_a2', ordem: 2, descricao: 'Levantar ação realizada para reduzir o indicador', responsavel: 'Ana Rita', progresso_pct: 100, prazo: null, status: 'concluido', observacao: 'Feito' },
+        { id: 'HOB_exames_cultura_a3', ordem: 3, descricao: 'Mapear e implementar indicador de atraso de liberação de cultura', responsavel: 'Ana Rita', progresso_pct: 100, prazo: null, status: 'concluido', observacao: 'Feito' },
+        { id: 'HOB_exames_cultura_a4', ordem: 4, descricao: 'Reduzir o tempo para liberação das culturas', responsavel: 'Ana Rita', progresso_pct: 0, prazo: null, status: 'em_andamento', observacao: 'Reduziu em 2h' },
+        { id: 'HOB_exames_cultura_a5', ordem: 5, descricao: 'Revisar o fluxo de liberação de exames externos', responsavel: 'Ana Rita', progresso_pct: 0, prazo: null, status: 'estacionamento_ideias', observacao: 'Seria importante disponibilizar no SIGRAH (em anexos)' },
+        { id: 'HOB_exames_cultura_a6', ordem: 6, descricao: 'Reforçar com as equipes da assistência a coleta de amostras de exames da FUNED (manual da FUNED)', responsavel: 'Ana Rita', progresso_pct: 0, prazo: null, status: 'estacionamento_ideias', observacao: 'Fazer um informe aos coordenadores que não vai aceitar amostras sem notificação / fazer um recorte dos principais problemas relacionados aos exames externos para direcionar as orientações. Divulgar o link para Manual da Funed' },
+        { id: 'HOB_exames_cultura_a7', ordem: 7, descricao: 'Monitorar a perda de exames externos', responsavel: 'Ana Rita', progresso_pct: 0, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_exames_cultura_a8', ordem: 8, descricao: 'Acompanhamento do número de retificação de laudos', responsavel: 'Ana Rita', progresso_pct: 0, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_exames_cultura_a9', ordem: 9, descricao: 'Implantação BR Cast', responsavel: 'Ana Rita', progresso_pct: 0, prazo: null, status: 'em_andamento', observacao: 'Em andamento' }
+      ]
+    },
+    {
+      id: 'HOB_proj_setup_leitos',
+      raia: 'saida',
+      nome: 'Kaizen Setup de Leitos',
+      responsavel: null,
+      ordem: 9,
+      indicadores_vinculados: ['HOB_ind_setup_leitos', 'HOB_ind_fator_utilizacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
+      acoes: [
+        { id: 'HOB_setup_leitos_a1', ordem: 1, descricao: 'Parametrizar sistema para monitorar intervalo de substituição de leitos', responsavel: 'Renata', progresso_pct: 0, prazo: '2026-04-25', status: 'em_atraso', observacao: 'Customização do MV - foi pedido relatório à SMSA' },
+        { id: 'HOB_setup_leitos_a2', ordem: 2, descricao: 'Comparar indicadores mensais (média antes e depois) e divulgar para o hospital o impacto', responsavel: 'Renata', progresso_pct: 0, prazo: '2026-04-30', status: 'em_atraso', observacao: 'Trabalhar com o enfermeiro para não atrasar a alta hospitalar e contaminar os indicadores' },
+        { id: 'HOB_setup_leitos_a3', ordem: 3, descricao: 'Ampliar os setores monitorados', responsavel: 'Renata', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_setup_leitos_a4', ordem: 4, descricao: 'Monitorar o setor a neonatologia (quem limpa o leito é a enfermagem e não a limpeza)', responsavel: null, progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: 'Estacionamento de ideias' },
+        { id: 'HOB_setup_leitos_a5', ordem: 5, descricao: 'Agendar reunião entre equipes para análise higienização leitos Neonatologia', responsavel: 'Anderson', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_setup_leitos_a6', ordem: 6, descricao: 'Kits de rouparia', responsavel: null, progresso_pct: null, prazo: null, status: 'em_andamento', observacao: 'Foi instalado um painel na rouparia e iniciou os kits da alta' },
+        { id: 'HOB_setup_leitos_a7', ordem: 7, descricao: 'Kit da enfermaria', responsavel: null, progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null },
+        { id: 'HOB_setup_leitos_a8', ordem: 8, descricao: 'Estabelecer meta de tempo para o paciente ocupar o leito, após a liberação pelo NIR', responsavel: 'Diretoria', progresso_pct: null, prazo: null, status: 'estacionamento_ideias', observacao: null }
+      ]
+    },
+    {
+      id: 'HOB_proj_cti',
+      raia: 'saida',
+      nome: 'Kaizen CTI',
+      responsavel: null,
+      ordem: 10,
+      indicadores_vinculados: ['HOB_ind_los_com_internacao', 'HOB_ind_fator_utilizacao', 'HOB_ind_tmp_origem_ps', 'HOB_ind_numero_kaizens'],
+      acoes: [
+        { id: 'HOB_cti_a1', ordem: 1, descricao: 'Implementar Kanban no CTI', responsavel: 'Janice / Camila Vaz', progresso_pct: 0, prazo: '2026-04-29', status: 'em_atraso', observacao: 'Pendente, UCIA vai mapear pré-alta até paciente chegar nas enfermarias (08/05); fizeram um plano; alinhar com NIR e com Laboratório; reforçar com coordenadores das enfermarias sobre a transferência do cuidado; análise dos hospitais de tempo permanência das principais patologias, para avaliar o tempo do HOB e revisar protocolos' },
+        { id: 'HOB_cti_a2', ordem: 2, descricao: 'Fluxo de alta', responsavel: 'Janice', progresso_pct: null, prazo: null, status: 'em_andamento', observacao: 'Em andamento, falta colocar no modelo padrão' },
+        { id: 'HOB_cti_a3', ordem: 3, descricao: 'Planilha de pré-alta', responsavel: 'Janice / C. Zampa', progresso_pct: null, prazo: '2026-05-15', status: 'em_andamento', observacao: 'Em construção (1ª quinzena maio)' },
+        { id: 'HOB_cti_a4', ordem: 4, descricao: 'Análise dos hospitais de tempo permanência das principais patologias, para avaliar o tempo do HOB e revisar protocolos', responsavel: 'Janice / Erica', progresso_pct: null, prazo: null, status: 'em_andamento', observacao: 'Solicitado à SMSA, pediram prazo para envio' }
+      ]
     }
   ]
 };
