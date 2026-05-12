@@ -24491,10 +24491,12 @@ const DataLayer = (function() {
     },
 
     /** Lista IDs de todos os projetos visíveis (mock + server net-new + override _is_new).
-     *  [HOB 2026-05-11] HMSA e HOB têm MOCK próprio. Outros hospitais veem só server+override. */
+     *  [HOB 2026-05-12] HOB migrado pra fonte-banco-única (seed_hob_2026-05-11 populou 68 ações no Supabase).
+     *  Manter HOB no array fazia mock JS sobrescrever deleted_at do server → ações reapareciam após delete.
+     *  HMSA ainda usa MOCK como source-of-truth. HJXXIII/HMAGR nunca tiveram MOCK próprio. */
     listProjetoIds() {
       const ids = new Set();
-      const HOSPITAIS_COM_MOCK = ['HMSA', 'HOB'];
+      const HOSPITAIS_COM_MOCK = ['HMSA'];
       if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAIS_COM_MOCK.includes(HOSPITAL_ID)) {
         MOCK_DATA.projetos.projetos.forEach(p => ids.add(p.id));
       }
@@ -24507,11 +24509,13 @@ const DataLayer = (function() {
     },
 
     /** Lista todas ações visíveis de um projeto (mock + server + override).
-     *  [HOB 2026-05-11] HMSA e HOB têm MOCK próprio. Outros hospitais veem só server+override. */
+     *  [HOB 2026-05-12] HOB migrado pra fonte-banco-única — server agora respeita deleted_at.
+     *  Bug fix: mock JS adicionava IDs ao Set sem checar deleted_at do server, fazendo ações
+     *  deletadas reaparecerem após render. HMSA continua usando MOCK como source-of-truth. */
     listAcoesByProjeto(projId) {
       const ids = new Set();
-      // Mock (HMSA + HOB)
-      const HOSPITAIS_COM_MOCK = ['HMSA', 'HOB'];
+      // Mock (somente HMSA — HOB migrou pra banco em 12/mai)
+      const HOSPITAIS_COM_MOCK = ['HMSA'];
       if (typeof MOCK_DATA !== 'undefined' && typeof HOSPITAL_ID !== 'undefined' && HOSPITAIS_COM_MOCK.includes(HOSPITAL_ID)) {
         const p = MOCK_DATA.projetos.projetos.find(p => p.id === projId);
         if (p) p.acoes.forEach(a => ids.add(a.id));
