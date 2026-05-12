@@ -12334,6 +12334,130 @@ function _pdfDrawCapa(doc, dash, comanejo) {
   doc.text(`Sem previsão de alta: ${spCount}`, 105, 106, { align: 'center' });
 }
 
+/** Desenha 1 bed-card no PDF (44×28mm). Paridade visual com bed-card HTML.
+ *  opts = { isComanejo: bool, lpThreshold: number } */
+function _pdfDrawBedCard(doc, x, y, w, h, p, opts) {
+  const isComanejo = !!(opts && opts.isComanejo);
+  const lpThr = (opts && opts.lpThreshold) || (typeof getT === 'function' ? getT() : 7);
+  const dias = (typeof calcDiasHoje === 'function' ? calcDiasHoje(p) : 0) || 0;
+
+  // Tier por dias (Comanejo usa thresholds diferentes)
+  let tierKey;
+  if (isComanejo) {
+    tierKey = dias <= 1 ? 'f0' : dias <= 2 ? 'f1' : dias <= 3 ? 'f2' : dias <= 5 ? 'f3' : 'f4';
+  } else {
+    tierKey = dias <= 1 ? 'f0' : dias <= 2 ? 'f1' : dias <= 4 ? 'f2' : dias <= 7 ? 'f3' : 'f4';
+  }
+  const tier = _pdfPaleta[tierKey];
+  const isLP = dias > lpThr;
+
+  // Borda + fundo
+  doc.setFillColor(tier.fill[0], tier.fill[1], tier.fill[2]);
+  doc.setDrawColor(tier.border[0], tier.border[1], tier.border[2]);
+  doc.setLineWidth(isLP ? 1.0 : 0.4);
+  doc.roundedRect(x, y, w, h, 1.2, 1.2, 'FD');
+  doc.setLineWidth(0.2);
+
+  // Campos
+  const leitoN = p.numLeito || p.leito || '—';
+  const rawNome = p.nomePaciente || p.nome_paciente || '';
+  const nome = (typeof abreviarNomePaciente === 'function')
+    ? (abreviarNomePaciente(rawNome) || '—')
+    : (rawNome.substring(0, 16) || '—');
+  const esp = p.especialidade || '—';
+  const prevText = p.previsaoAlta || p.previsao_kanban || '';
+  const isSP_ = (typeof isSP === 'function') ? isSP(p) : (!prevText || prevText === 'SP');
+  const statusAlta = p.status_alta_pre_marcada;
+  const hasOv = !!p._hasLeitoOverride;
+  const ann = (typeof getAnn === 'function') ? getAnn(p) : null;
+  const temPA = !!ann;
+  const barr = (typeof _barreirasResumo === 'function' && ann) ? _barreirasResumo(ann) : null;
+
+  // Linha 1: Leito grande + badge canto sup direito
+  doc.setTextColor(20, 20, 30);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Leito ${leitoN}`, x + 2, y + 5);
+
+  // Badge canto sup direito — prioridade LP > OV > AD/AP > SP
+  let badgeText = null, badgeColor = null;
+  if (isLP)                  { badgeText = 'LP';        badgeColor = [239, 68, 68]; }
+  else if (hasOv)            { badgeText = 'OV';        badgeColor = [167, 139, 250]; }
+  else if (statusAlta)       { badgeText = statusAlta;  badgeColor = [40, 130, 60]; }
+  else if (isSP_)            { badgeText = 'SP';        badgeColor = [239, 68, 68]; }
+
+  if (badgeText) {
+    doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    const bw = badgeText.length <= 2 ? 8 : 10;
+    doc.roundedRect(x + w - bw - 1, y + 1, bw, 4.5, 0.5, 0.5, 'F');
+    doc.text(badgeText, x + w - bw/2 - 1, y + 4, { align: 'center' });
+  }
+
+  // Linha 2: especialidade
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 110);
+  doc.text(esp.substring(0, 22), x + 2, y + 10);
+
+  // Linha 3: dias GRANDE à esq + nome à dir
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(tier.text[0], tier.text[1], tier.text[2]);
+  doc.text(String(dias), x + 2, y + 18);
+
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(120, 120, 130);
+  doc.text('dias', x + 2, y + 21);
+
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(20, 20, 30);
+  doc.text(nome.substring(0, 18), x + 11, y + 18);
+
+  // Linha 4 (rodapé): bullet PA + prazo + tag barreiras
+  doc.setFontSize(7);
+
+  let footX = x + 2;
+  if (temPA) {
+    doc.setTextColor(59, 130, 246);
+    doc.setFont('helvetica', 'bold');
+    doc.text('•', footX, y + 25);
+    footX += 2;
+    doc.setFont('helvetica', 'normal');
+  }
+
+  if (isSP_) {
+    doc.setTextColor(239, 68, 68);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SP', footX, y + 25);
+  } else if (prevText) {
+    doc.setTextColor(40, 130, 60);
+    const m = prevText.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const display = m ? `${m[3]}/${m[2]}` : prevText.slice(0, 8);
+    doc.text(`até ${display}`, footX, y + 25);
+  } else if (temPA) {
+    doc.setTextColor(100, 100, 110);
+    doc.text('c/ ação', footX, y + 25);
+  }
+
+  // Tag barreiras à direita do rodapé
+  if (barr && barr.count) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
+    doc.setTextColor(140, 80, 20);
+    const tagText = `Barr:${barr.count}`;
+    doc.text(tagText, x + w - 2, y + 25, { align: 'right' });
+  }
+
+  // Reset cores/fonte
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
+}
+
 /* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
