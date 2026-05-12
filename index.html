@@ -7928,20 +7928,28 @@ async function sbPatchOptimistic(table, id, updatedAt, body, contextLabel) {
   }
 }
 
-/* ─── LUCIDE HELPER ─── [2026-05-11]
- * Substitui chamadas espalhadas de `lucide.createIcons()` (15+ pontos).
- * Causa raiz dos botões intermitentes: cada render chama createIcons() que varre o DOM inteiro
- * e re-injeta SVGs. Múltiplos renders simultâneos disparam race — o último write vence,
- * deixando ícones em estado parcial.
- * Fix: throttle 50ms (imperceptível visual) + guard único contra reentrância. */
+/* ─── LUCIDE HELPER ─── [2026-05-11 v2 — debounce]
+ * Substitui 20+ chamadas espalhadas de `lucide.createIcons()`.
+ * Causa raiz dos botões intermitentes: múltiplos renders sequenciais (innerHTML A, B, C)
+ * com createIcons disparado a cada um. Race entre setTimeout callback e innerHTML setter
+ * fazia createIcons rodar enquanto DOM ainda estava em transição.
+ *
+ * v1 (throttle-ignore): se timer ativo, ignora call. PROBLEMA: último render fica sem ícones
+ * porque primeiro call agendou createIcons antes do último innerHTML completar.
+ *
+ * v2 (debounce + rAF): cada call RESETA o timer (clearTimeout). Garante que createIcons
+ * roda APÓS última mudança DOM + requestAnimationFrame garante exec após próximo paint
+ * (DOM totalmente settled). */
 let _lucideThrottle = null;
 function lucideRefresh() {
-  if (_lucideThrottle) return;
+  clearTimeout(_lucideThrottle);
   _lucideThrottle = setTimeout(() => {
     _lucideThrottle = null;
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      try { lucide.createIcons(); } catch (e) { console.warn('[lucideRefresh]', e); }
-    }
+    requestAnimationFrame(() => {
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { lucide.createIcons(); } catch (e) { console.warn('[lucideRefresh]', e); }
+      }
+    });
   }, 50);
 }
 
@@ -14103,18 +14111,23 @@ async function _atualizarBadgesNavTabs() {
     }
   }
   const retNomes = (typeof AB !== 'undefined' && AB.cadastro && AB.cadastro.retaguardaNomes) || [];
-  const retNomesIn = retNomes.length ? `&setor=not.in.(${retNomes.map(n => `"${n}"`).join(',')})` : '';
+  // [2026-05-11] PostgreSQL trata NULL NOT IN como falso. Preserva rows com setor=NULL via or=().
+  const retNomesIn = retNomes.length ? `&or=(setor.is.null,setor.not.in.(${retNomes.map(n => `"${n}"`).join(',')}))` : '';
+  const retNomesIn_only = retNomes.length ? `&setor=in.(${retNomes.map(n => `"${n}"`).join(',')})` : '';
   const filtroBoarding = '&boarding_origem_id=is.null';
 
-  const [nBoarding, nLista] = await Promise.all([
+  const [nBoarding, nLista, nRetag] = await Promise.all([
     fetchCount(`${SB_URL}/rest/v1/boarding_episodios?hospital_id=eq.${HOSP}&data_entrada=eq.${hoje}&select=id`),
-    fetchCount(`${SB_URL}/rest/v1/internacoes_hmsa?hospital=eq.${HOSP}&status_internacao=eq.ativa${filtroBoarding}${retNomesIn}&select=id`)
+    fetchCount(`${SB_URL}/rest/v1/internacoes_hmsa?hospital=eq.${HOSP}&status_internacao=eq.ativa${filtroBoarding}${retNomesIn}&select=id`),
+    // [2026-05-11] Badge Retaguarda PS (Comanejo no HOB) — count de pacientes alocados em setores retaguarda.
+    retNomes.length ? fetchCount(`${SB_URL}/rest/v1/internacoes_hmsa?hospital=eq.${HOSP}&status_internacao=eq.ativa${retNomesIn_only}&select=id`) : Promise.resolve(0)
   ]);
   if (nBoarding !== null) setBadge('boarding', nBoarding);
   if (nLista !== null) {
     setBadge('internacoes', nLista);
     setBadge('gestao-leitos', nLista);
   }
+  if (nRetag !== null) setBadge('retaguarda-ps', nRetag);
 }
 
 /** [Entrega 2 — 2026-05-07] Renderiza fila Retaguarda PS — pacientes vindos de Boarding
