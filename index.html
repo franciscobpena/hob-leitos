@@ -12517,6 +12517,52 @@ function _pdfPageEspecialidade(doc, esp, pacientes, rank, total) {
   });
 }
 
+/** Renderiza página Comanejo (retaguarda PS). Threshold próprio (3d default, lê localStorage).
+ *  Fora do ranking principal: sem #N/Total no header. */
+function _pdfPageComanejo(doc, pacientes) {
+  const pageH = 297, marginX = 12;
+  const cardW = 44, cardH = 28, gapX = 3, gapY = 3, cardsPerRow = 4;
+  const topY = 24;
+
+  const lpThr = (() => {
+    const stored = parseInt(localStorage.getItem(`retaguarda_lp_threshold_${HOSPITAL_ID}`), 10);
+    return (stored >= 1 && stored <= 7) ? stored : 3;
+  })();
+
+  const color = _pdfCorEspecialidade('Comanejo');
+  const tmp = _tmpMedio(pacientes);
+  const lpCount = pacientes.filter(p => (calcDiasHoje(p) || 0) > lpThr).length;
+
+  function drawHeader(cont) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(color[0], color[1], color[2]);
+    doc.text(`Comanejo${cont ? ' (cont.)' : ''}`, marginX, 12);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 90);
+    doc.text(`Retaguarda PS · LP >${lpThr}d · ${pacientes.length} leitos em retaguarda · TMP ${tmp.toFixed(1)}d · LP ${lpCount}`, marginX, 18);
+    doc.setTextColor(0, 0, 0);
+  }
+  drawHeader(false);
+
+  let row = 0, col = 0;
+  pacientes.forEach(p => {
+    const x = marginX + col * (cardW + gapX);
+    let y = topY + row * (cardH + gapY);
+    if (y + cardH > pageH - 12) {
+      doc.addPage();
+      drawHeader(true);
+      row = 0; col = 0;
+      y = topY;
+    }
+    _pdfDrawBedCard(doc, x, y, cardW, cardH, p, { isComanejo: true, lpThreshold: lpThr });
+    col++;
+    if (col >= cardsPerRow) { col = 0; row++; }
+  });
+}
+
 /* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
