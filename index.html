@@ -12563,6 +12563,55 @@ function _pdfPageComanejo(doc, pacientes) {
   });
 }
 
+/** Exporta PDF consolidado: capa + N pags especialidades (TMP desc) + Comanejo (isolado fim). */
+async function exportarPDFLeitos() {
+  let pdfLib;
+  try { pdfLib = await carregarJsPDF(); }
+  catch (e) { alert('Erro carregando jsPDF: ' + e.message); return; }
+  const { jsPDF } = pdfLib;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // Fetch Comanejo (não vem em allPatients)
+  let comanejo = [];
+  try {
+    const resp = await fetch(`${SB_URL}/rest/v1/internacoes_hmsa?hospital=eq.${HOSPITAL_ID}&setor=eq.Comanejo&status_internacao=eq.ativa&select=*&order=leito.asc`, { headers: SB_H });
+    if (resp.ok) comanejo = await resp.json();
+  } catch (e) { console.warn('[PDF] Comanejo fetch fail:', e); }
+
+  const dash = allPatients || [];
+
+  // Capa
+  _pdfDrawCapa(doc, dash, comanejo);
+
+  // Agrupa dashboard por especialidade, ordena por TMP médio desc
+  const especsMap = {};
+  dash.forEach(p => {
+    const k = (p.especialidade || 'Sem especialidade').toString().trim();
+    if (!especsMap[k]) especsMap[k] = [];
+    especsMap[k].push(p);
+  });
+  const ranking = _ordenarEspecialidadesPorTMP(especsMap);
+  const totalEspecs = ranking.length;
+
+  // 1 página por especialidade, em ordem TMP desc, cards ordenados por dias desc
+  ranking.forEach(({ esp, pacs }, idx) => {
+    doc.addPage();
+    const pacsOrd = _ordenarCardsPorDias(pacs);
+    _pdfPageEspecialidade(doc, esp, pacsOrd, idx + 1, totalEspecs);
+  });
+
+  // Comanejo isolado no fim
+  if (comanejo.length) {
+    doc.addPage();
+    const comanejoOrd = _ordenarCardsPorDias(comanejo);
+    _pdfPageComanejo(doc, comanejoOrd);
+  }
+
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const safeDate = hoje.replace(/\//g, '-');
+  doc.save(`HOB_leitos_${safeDate}.pdf`);
+}
+
 /* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
