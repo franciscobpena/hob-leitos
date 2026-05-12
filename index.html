@@ -22845,6 +22845,26 @@ function renderKaizenMatriz() {
   refreshIcons();
 }
 
+/* [HOB 2026-05-12] Ordenação canonical de ações Kaizen por urgência clínica.
+   Maestro definiu: Em atraso > Em andamento > Concluído > Estacionamento de Ideias.
+   Tie-break dentro do mesmo status: campo `ordem` manual (preserva ordenação fina). */
+const STATUS_ORDER_KAIZEN = {
+  em_atraso: 0,
+  risco_atraso: 1,
+  em_andamento: 2,
+  concluido: 3,
+  estacionamento_ideias: 4,
+  cancelada: 5
+};
+function _sortAcoesKaizen(acoes) {
+  return [...(acoes || [])].sort((a, b) => {
+    const oa = STATUS_ORDER_KAIZEN[a.status] ?? 9;
+    const ob = STATUS_ORDER_KAIZEN[b.status] ?? 9;
+    if (oa !== ob) return oa - ob;
+    return (a.ordem || 0) - (b.ordem || 0);
+  });
+}
+
 /** [Fase 25] Lista colapsável de ações por projeto — agora com edição inline,
  *  botões editar/excluir por linha e botão "+ adicionar ação" no rodapé do projeto. */
 function renderKaizenAcoes() {
@@ -22855,7 +22875,7 @@ function renderKaizenAcoes() {
   const blocos = projetos.map(p => {
     const status = statusProjetoAgregado(p);
     const projIdAttr = escapeHtml(p.id);
-    const linhas = p.acoes.map(a => {
+    const linhas = _sortAcoesKaizen(p.acoes).map(a => {
       const respHtml = a.responsavel ? escapeHtml(a.responsavel) : placeholderEditavel('—');
       const progHtml = a.progresso_pct == null ? '—' : a.progresso_pct + '%';
       const acaoIdAttr = escapeHtml(a.id);
@@ -24060,7 +24080,7 @@ function renderProjetoDrilldown(projetoId) {
 
   const acoesHtml = projeto.acoes.length === 0
     ? '<div style="color:var(--textMuted);font-size:11px;font-style:italic">Nenhuma ação cadastrada.</div>'
-    : projeto.acoes.map(a => _renderAcaoLinha(a, projetoId)).join('');
+    : _sortAcoesKaizen(projeto.acoes).map(a => _renderAcaoLinha(a, projetoId)).join('');
 
   const raiaObj = MOCK_DATA.projetos.raias.find(r => r.id === projeto.raia);
   const raiaLabel = raiaObj ? raiaObj.nome : projeto.raia;
