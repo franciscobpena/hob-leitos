@@ -12279,6 +12279,33 @@ function _pdfCorEspecialidade(esp) {
   return _hexToRgb(WARD_COLORS[esp]);
 }
 
+/** TMP médio = média de calcDiasHoje. 0 se vazio. */
+function _tmpMedio(pacientes) {
+  if (!pacientes || !pacientes.length) return 0;
+  const soma = pacientes.reduce((s, p) => s + (calcDiasHoje(p) || 0), 0);
+  return soma / pacientes.length;
+}
+
+/** Ordena Object.entries(especsMap) por TMP médio desc.
+ *  Retorna [{ esp, pacs, tmp }]. */
+function _ordenarEspecialidadesPorTMP(especsMap) {
+  return Object.entries(especsMap)
+    .map(([esp, pacs]) => ({ esp, pacs, tmp: _tmpMedio(pacs) }))
+    .sort((a, b) => b.tmp - a.tmp);
+}
+
+/** Ordena cards por dias permanência desc. Tie-break: leito asc (numérico). */
+function _ordenarCardsPorDias(pacientes) {
+  return [...pacientes].sort((a, b) => {
+    const dA = calcDiasHoje(a) || 0;
+    const dB = calcDiasHoje(b) || 0;
+    if (dB !== dA) return dB - dA;
+    const lA = parseInt(a.numLeito || a.leito || 0, 10);
+    const lB = parseInt(b.numLeito || b.leito || 0, 10);
+    return lA - lB;
+  });
+}
+
 /* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
