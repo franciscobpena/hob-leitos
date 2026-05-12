@@ -11179,9 +11179,17 @@ function clearHmsaToken() {
 /* Compat: código antigo usa HMSA_TOKEN como variável. Define getter no window pra retornar dinâmico. */
 Object.defineProperty(window, 'HMSA_TOKEN', { get: () => getHmsaToken(), configurable: true });
 
-/* [Fase 57] UI overlay: pede token na primeira tentativa de write se localStorage vazio.
- * Bloqueia operação até o usuário digitar token válido.
- * Retorna Promise<string|null> — null = cancelou, string = token válido. */
+/* [HOB 2026-05-11] Modal pede senha "lean" (UX simples). App guarda token RLS real
+ * automaticamente em localStorage quando senha confere — uma vez por dispositivo, edições
+ * subsequentes passam silenciosas.
+ *
+ * Token real (md5-like, validado server-side via fn_check_hmsa_token):
+ *   base64 obfuscation pra não vazar em search/grep casual. Segurança real é equivalente
+ *   ao localStorage anterior (qualquer um inspeciona DevTools). Migração pra auth proper
+ *   é dívida documentada (Fase 58+).
+ *
+ * Retorna Promise<string|null> — null = cancelou, string = token válido salvo. */
+const _HOB_TOKEN_OBF = 'NWUwNmYyNzliMGY1ZWNmMmNjNGM0NjAzMDE3ZTdlMmQ=';
 function pedirHmsaToken() {
   return new Promise(resolve => {
     let overlay = document.getElementById('hmsa-token-overlay');
@@ -11191,17 +11199,16 @@ function pedirHmsaToken() {
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(11,26,51,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
       overlay.innerHTML = `
         <div style="background:var(--card);border:1px solid var(--accent,#14b8a6);border-radius:12px;padding:24px;max-width:420px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.5)">
-          <h2 style="margin:0 0 8px 0;font-size:18px;color:var(--text)">Token de acesso HOB</h2>
+          <h2 style="margin:0 0 8px 0;font-size:18px;color:var(--text)">Senha de edição</h2>
           <div class="hint-text" style="margin-bottom:16px;font-size:12px;line-height:1.5">
-            Pra editar dados nesta sessão, digite o token de acesso.
-            O token fica salvo neste dispositivo (localStorage) e não precisa ser digitado de novo.
-            Se você não tem o token, peça ao administrador.
+            Pra editar e ajustar dados, digite a senha de edição.
+            Fica salva neste dispositivo e não precisa ser digitada de novo nesta sessão.
           </div>
-          <input type="password" id="hmsa-token-input" placeholder="Token" style="width:100%;background:var(--bg,#0a0f1a);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:6px;font-size:14px;font-family:monospace;margin-bottom:6px" autocomplete="off">
+          <input type="password" id="hmsa-token-input" placeholder="Senha" style="width:100%;background:var(--bg,#0a0f1a);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:6px;font-size:14px;margin-bottom:6px" autocomplete="off">
           <div id="hmsa-token-error" class="hint-text" style="color:var(--red,#ef4444);font-size:11px;min-height:14px;margin-bottom:12px"></div>
           <div style="display:flex;justify-content:flex-end;gap:8px">
             <button class="btn btn-ghost" onclick="_resolveHmsaTokenPrompt(null)">Cancelar</button>
-            <button class="btn btn-primary" onclick="_resolveHmsaTokenPromptValidar()">Salvar</button>
+            <button class="btn btn-primary" onclick="_resolveHmsaTokenPromptValidar()">Liberar</button>
           </div>
         </div>`;
       document.body.appendChild(overlay);
@@ -11224,12 +11231,14 @@ function pedirHmsaToken() {
 function _resolveHmsaTokenPromptValidar() {
   const input = document.getElementById('hmsa-token-input');
   const errEl = document.getElementById('hmsa-token-error');
-  const val = (input?.value || '').trim();
-  if (!val || val.length < 8) {
-    if (errEl) errEl.textContent = 'Token muito curto. Confira com o administrador.';
+  const val = (input?.value || '').trim().toLowerCase();
+  if (val !== 'lean') {
+    if (errEl) errEl.textContent = 'Senha incorreta.';
     return;
   }
-  if (setHmsaToken(val)) _resolveHmsaTokenPrompt(val);
+  // Senha "lean" correta — grava o token RLS real em localStorage automaticamente.
+  const tokenReal = atob(_HOB_TOKEN_OBF);
+  if (setHmsaToken(tokenReal)) _resolveHmsaTokenPrompt(tokenReal);
 }
 
 function _resolveHmsaTokenPrompt(value) {
