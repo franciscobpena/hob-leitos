@@ -12458,6 +12458,41 @@ function _pdfDrawBedCard(doc, x, y, w, h, p, opts) {
   doc.setTextColor(0, 0, 0);
 }
 
+/** Header de página de especialidade: cor + ranking + stats completas. */
+function _pdfDrawWardHeader(doc, esp, rank, total, pacientes, capacidade, cont) {
+  const marginX = 12;
+  const color = _pdfCorEspecialidade(esp);
+  const tmp = _tmpMedio(pacientes);
+  const ocupados = pacientes.length;
+  const livres = (typeof capacidade === 'number' && capacidade > 0) ? Math.max(0, capacidade - ocupados) : 0;
+  const spCnt = pacientes.filter(p => typeof isSP === 'function' && isSP(p)).length;
+  const spPct = ocupados ? Math.round(spCnt / ocupados * 100) : 0;
+
+  // Linha 1: #rank pequeno cinza + ESP grande colorida
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 130);
+  doc.text(`#${rank}/${total}`, marginX, 12);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(color[0], color[1], color[2]);
+  doc.text(esp + (cont ? ' (cont.)' : ''), marginX + 14, 12);
+
+  // Linha 2: stats
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(80, 80, 90);
+  const capTxt = (typeof capacidade === 'number' && capacidade > 0) ? `${ocupados}/${capacidade} leitos` : `${ocupados} leitos ocupados`;
+  const livresTxt = livres > 0 ? ` · ${livres} livre${livres === 1 ? '' : 's'}` : '';
+  const tmpTxt = ocupados ? ` · TMP ${tmp.toFixed(1)}d` : '';
+  const spTxt = ocupados ? ` · SP ${spCnt} (${spPct}%)` : '';
+  doc.text(`${capTxt}${livresTxt}${tmpTxt}${spTxt}`, marginX, 18);
+
+  // Reset
+  doc.setTextColor(0, 0, 0);
+}
+
 /* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
