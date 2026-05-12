@@ -1230,7 +1230,7 @@ footer { padding-bottom: 80px; }
   z-index: 1;
 }
 /* Row accent por status */
-.ap-row-atraso    { border-left: 3px solid var(--red)   !important; }
+.ap-row-atraso    { /* [HOB 2026-05-11] removido border-left vermelho — status badge na coluna comunica suficientemente */ }
 .ap-row-andamento { border-left: 3px solid var(--blue)  !important; }
 .ap-row-concluida { border-left: 3px solid var(--green) !important; opacity: .7; }
 .ap-row-pendente  { border-left: 3px solid var(--amber) !important; }
@@ -7928,18 +7928,18 @@ async function sbPatchOptimistic(table, id, updatedAt, body, contextLabel) {
   }
 }
 
-/* ─── LUCIDE HELPER ─── [2026-05-11 v2 — debounce]
+/* ─── LUCIDE HELPER ─── [2026-05-11 v3 — debounce + MutationObserver]
  * Substitui 20+ chamadas espalhadas de `lucide.createIcons()`.
  * Causa raiz dos botões intermitentes: múltiplos renders sequenciais (innerHTML A, B, C)
- * com createIcons disparado a cada um. Race entre setTimeout callback e innerHTML setter
- * fazia createIcons rodar enquanto DOM ainda estava em transição.
+ * com createIcons disparado a cada um. Race entre setTimeout callback e innerHTML setter.
  *
- * v1 (throttle-ignore): se timer ativo, ignora call. PROBLEMA: último render fica sem ícones
- * porque primeiro call agendou createIcons antes do último innerHTML completar.
- *
- * v2 (debounce + rAF): cada call RESETA o timer (clearTimeout). Garante que createIcons
- * roda APÓS última mudança DOM + requestAnimationFrame garante exec após próximo paint
- * (DOM totalmente settled). */
+ * v1 (throttle-ignore): se timer ativo, ignora call. Último render sem ícones.
+ * v2 (debounce + rAF): clearTimeout reseta timer; createIcons roda APÓS última mudança.
+ *    PROBLEMA RESIDUAL: innerHTML em código que NÃO chama lucideRefresh fica sem ícones
+ *    (fetch async tardio, libs externas, etc).
+ * v3 (debounce + MutationObserver): observer detecta automaticamente novos
+ *    <i data-lucide> no DOM e dispara lucideRefresh. Cobre TODOS os innerHTML mesmo
+ *    sem call explícita. Filtra <svg> pra evitar loop (createIcons substitui <i> por <svg>). */
 let _lucideThrottle = null;
 function lucideRefresh() {
   clearTimeout(_lucideThrottle);
@@ -7951,6 +7951,23 @@ function lucideRefresh() {
       }
     });
   }, 50);
+}
+function _setupLucideObserver() {
+  if (!window.MutationObserver || !document.body) return;
+  const observer = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        // Filtra SVG (resultado de createIcons) pra evitar loop infinito.
+        if (node.tagName === 'svg' || node.tagName === 'SVG') continue;
+        if (node.hasAttribute?.('data-lucide') || node.querySelector?.('i[data-lucide],[data-lucide]:not(svg)')) {
+          lucideRefresh();
+          return; // debounce já agrupa múltiplas mutations
+        }
+      }
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 /* ─── STATE ─── */
@@ -9387,27 +9404,37 @@ async function saveAnnotation() {
     }
 
     if (caseId) {
-      const aResp = await fetch(SB_URL + '/rest/v1/actions', {
-        method: 'POST',
-        headers: { ...SB_H, 'Prefer': 'return=representation' },
-        body: JSON.stringify({
-          case_id:    caseId,
-          hipotese:   ann.hipotese,
-          barreira:   ann.barreira,
-          barreira_2: ann.barreira_2 || null,
-          barreira_3: ann.barreira_3 || null,
-          detalhe:    ann.detalhe,
-          acao:       ann.acao,
-          responsavel:ann.responsavel,
-          prazo:      ann.prazo,
-          criado_por: 'equipe',
-          status_acao:'em_andamento',  // [HOB 2026-05-08] EGA cria já em andamento (eliminava 1 click manual)
-        }),
-      });
-      if (!aResp.ok) throw new Error('actions HTTP ' + aResp.status);
-      const aData  = await aResp.json();
-      const actId  = Array.isArray(aData) ? aData[0]?.id : null;
-      annCache[ep] = { ...ann, action_id: actId, case_id: caseId };
+      // [HOB 2026-05-11] N barreiras → N rows separadas na tabela actions.
+      // Antes: 1 row única com barreira/barreira_2/barreira_3 como colunas — UI mostrava só 1 linha.
+      // Agora: cada barreira vira sua própria linha no plano de ação. Compartilham ação/responsável/prazo
+      // do form (user edita individualmente depois via plano de ação).
+      const barreiras = (typeof _coletarBarreiras === 'function') ? _coletarBarreiras(ann) : [ann.barreira].filter(Boolean);
+      const lista = barreiras.length ? barreiras : [null];
+      const created = [];
+      for (const b of lista) {
+        const aResp = await fetch(SB_URL + '/rest/v1/actions', {
+          method: 'POST',
+          headers: { ...SB_H, 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            case_id:    caseId,
+            hipotese:   ann.hipotese,
+            barreira:   b,
+            barreira_2: null,  // [HOB 2026-05-11] legacy — sempre null em novas rows; cada barreira tem sua própria row agora
+            barreira_3: null,
+            detalhe:    ann.detalhe,
+            acao:       ann.acao,
+            responsavel:ann.responsavel,
+            prazo:      ann.prazo,
+            criado_por: 'equipe',
+            status_acao:'em_andamento',
+          }),
+        });
+        if (!aResp.ok) throw new Error('actions HTTP ' + aResp.status);
+        const aData  = await aResp.json();
+        const actId  = Array.isArray(aData) ? aData[0]?.id : null;
+        if (actId) created.push(actId);
+      }
+      annCache[ep] = { ...ann, action_ids: created, action_id: created[0] || null, case_id: caseId };
       sbOnline = true;
     }
   } catch(e) {
@@ -25755,6 +25782,7 @@ function applyHashRoute() {
 ═══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
+  if (typeof _setupLucideObserver === 'function') _setupLucideObserver();  // [HOB 2026-05-11 v3] auto-refresh quando innerHTML injeta <i data-lucide>
   applyHashRoute();                // [Fase 3.1] navega pela URL atual (default = home)
   // [Fase 13] Garante render da Agenda Lean caso a URL inicial seja agenda-lean
   if (location.hash === '#/agenda-lean' && typeof renderAgendaLean === 'function') renderAgendaLean();
