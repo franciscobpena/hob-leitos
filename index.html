@@ -8655,6 +8655,11 @@ const WARD_COLORS = {
   'Clínica Médica':       '#34D399',
   'Neuro/Tórax/Vascular': '#A78BFA',
   'CirGeral/Bucomaxilo':  '#FB923C',
+  // [HOB 2026-05-12] Entradas HOB pra PDF export
+  'Neurovascular':        '#A78BFA',
+  'Cirurgia':             '#FB923C',
+  'Comanejo':             '#64748B',
+  'Sem especialidade':    '#94A3B8',
 };
 
 /* [Fase 47] Descrição completa das barreiras de alta — usada em tooltips e PPT.
@@ -12249,6 +12254,29 @@ function carregarJsPDF() {
     document.head.appendChild(s);
   });
   return window._jsPdfLoading;
+}
+
+/** Paleta F0-F4 replicada de index.html:444-448 (--f0..--f4 CSS).
+ *  Sync manual: se CSS mudar, atualizar aqui. */
+const _pdfPaleta = {
+  f0: { fill: [232, 252, 234], border: [40, 167, 69],   text: [20, 80, 35] },   // ≤1d
+  f1: { fill: [240, 252, 232], border: [132, 204, 22],  text: [40, 90, 25] },   // ≤2d
+  f2: { fill: [253, 246, 209], border: [251, 191, 36],  text: [120, 90, 15] },  // ≤4d
+  f3: { fill: [253, 224, 192], border: [245, 158, 11],  text: [140, 80, 20] },  // ≤7d (≤5d Comanejo)
+  f4: { fill: [254, 226, 226], border: [239, 68, 68],   text: [140, 30, 30] },  // >7d (>5d Comanejo)
+};
+
+/** Helper: '#RRGGBB' → [r,g,b]. Fallback teal se inválido. */
+function _hexToRgb(hex) {
+  if (!hex || typeof hex !== 'string') return [20, 184, 166];
+  const m = hex.replace('#','').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (!m) return [20, 184, 166];
+  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+}
+
+/** Cor da especialidade no PDF, lookup em WARD_COLORS. Fallback teal. */
+function _pdfCorEspecialidade(esp) {
+  return _hexToRgb(WARD_COLORS[esp]);
 }
 
 /* ============================================================
