@@ -12231,6 +12231,27 @@ async function exportarExcelNIR(avaliacao) {
 }
 
 /* ============================================================
+   HOB 2026-05-12 — PDF EXPORT GESTÃO DE LEITOS
+   Spec: docs/superpowers/specs/2026-05-12-hob-pdf-paridade-tmp-design.md
+   ============================================================ */
+
+/** Lazy load jsPDF (cdnjs imutável, sem SRI necessário).
+ *  Cache global em window._jsPdfLoading pra evitar recarga. */
+function carregarJsPDF() {
+  if (window.jspdf?.jsPDF) return Promise.resolve(window.jspdf);
+  if (window._jsPdfLoading) return window._jsPdfLoading;
+  window._jsPdfLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve(window.jspdf);
+    s.onerror = () => reject(new Error('Falha carregando jsPDF'));
+    document.head.appendChild(s);
+  });
+  return window._jsPdfLoading;
+}
+
+/* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
 
