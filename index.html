@@ -12236,7 +12236,7 @@ async function exportarExcelNIR(avaliacao) {
 }
 
 /* ============================================================
-   HOB 2026-05-12 — PDF EXPORT GESTÃO DE LEITOS
+   [2026-05-12] PDF EXPORT GESTÃO DE LEITOS — multi-tenant (HOB|HJXXIII|HMAGR)
    Spec: docs/superpowers/specs/2026-05-12-hob-pdf-paridade-tmp-design.md
    ============================================================ */
 
@@ -12618,7 +12618,7 @@ async function exportarPDFLeitos() {
 
   const hoje = new Date().toLocaleDateString('pt-BR');
   const safeDate = hoje.replace(/\//g, '-');
-  doc.save(`HOB_leitos_${safeDate}.pdf`);
+  doc.save(`${HOSPITAL_ID}_leitos_${safeDate}.pdf`);
 }
 
 /* ============================================================
