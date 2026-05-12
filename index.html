@@ -12493,6 +12493,30 @@ function _pdfDrawWardHeader(doc, esp, rank, total, pacientes, capacidade, cont) 
   doc.setTextColor(0, 0, 0);
 }
 
+/** Renderiza 1 página de especialidade: header + grid bed-cards. Paginação automática (cont.). */
+function _pdfPageEspecialidade(doc, esp, pacientes, rank, total) {
+  const pageH = 297, marginX = 12;
+  const cardW = 44, cardH = 28, gapX = 3, gapY = 3, cardsPerRow = 4;
+  const topY = 24;
+
+  _pdfDrawWardHeader(doc, esp, rank, total, pacientes, null, false);
+
+  let row = 0, col = 0;
+  pacientes.forEach(p => {
+    const x = marginX + col * (cardW + gapX);
+    let y = topY + row * (cardH + gapY);
+    if (y + cardH > pageH - 12) {
+      doc.addPage();
+      _pdfDrawWardHeader(doc, esp, rank, total, pacientes, null, true);
+      row = 0; col = 0;
+      y = topY;
+    }
+    _pdfDrawBedCard(doc, x, y, cardW, cardH, p, { isComanejo: false });
+    col++;
+    if (col >= cardsPerRow) { col = 0; row++; }
+  });
+}
+
 /* ============================================================
    FASE 60 — EXCEL EXPORT PROJETOS KAIZEN (3 abas)
    ============================================================ */
