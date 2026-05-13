@@ -21898,12 +21898,15 @@ function _renderProjetosPopoverHTML(projetos) {
     if (!porRaia[r]) porRaia[r] = [];
     porRaia[r].push(p);
   });
+  // [HOB 2026-05-13 fix cores] Espelha cores do CSS card .kaizen-card (linhas ~2179-2190).
+  // Source of truth Fase 46: em_andamento=verde (saudável), concluido=azul (pronto p/ encerrar).
+  // ANTES estavam invertidos (em_andamento=blue, concluido=green) — não batia com Matriz.
   const corStatus = {
-    estacionamento_ideias: 'gray',
-    em_andamento: 'blue',
+    estacionamento_ideias: 'gray-hold',
+    em_andamento: 'green',
     risco_atraso: 'amber',
     em_atraso: 'red',
-    concluido: 'green'
+    concluido: 'blue'
   };
   const blocos = ordemRaia.filter(r => porRaia[r] && porRaia[r].length).map(raiaKey => {
     const linhas = porRaia[raiaKey].sort((a,b) => (a.ordem||0) - (b.ordem||0)).map(p => {
@@ -22785,12 +22788,15 @@ function renderKaizenLegenda() {
   const cont = document.getElementById('kz-legenda');
   if (!cont) return;
   const statuses = ['estacionamento_ideias', 'em_andamento', 'risco_atraso', 'em_atraso', 'concluido'];
+  // [HOB 2026-05-13 fix cores] Espelha CSS card .kaizen-card (linhas ~2179-2190).
+  // Source of truth Fase 46: em_andamento=verde (saudável), concluido=azul (pronto p/ encerrar).
+  // ANTES inversos (em_andamento=blue, concluido=green) — legenda contradiz card visual.
   const colorVar = {
     estacionamento_ideias: 'var(--gray-hold)',
-    em_andamento:          'var(--blue)',
+    em_andamento:          'var(--green)',
     risco_atraso:          'var(--amber)',
     em_atraso:             'var(--red)',
-    concluido:             'var(--green)'
+    concluido:             'var(--blue)'
   };
   cont.innerHTML = statuses.map(s => `
     <span class="leg-item">
