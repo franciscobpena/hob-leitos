@@ -4702,6 +4702,18 @@ footer {
 }
 .cell-select.cell-select-confiab {
   font-weight: 600;
+  min-width: 96px;
+  padding: 4px 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* [HOB 2026-05-13] Quando confiabilidade ainda não definida, option vazia vira placeholder
+   discreto (italic + cor mute) pra sinalizar CTA, mesma linguagem visual do drilldown ph-editavel. */
+.cell-confiab-null .cell-select-confiab {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--textMuted);
 }
 .cell-select option {
   background: var(--cardAlt);
@@ -8656,6 +8668,8 @@ const WARD_COLORS = {
   'Neuro/Tórax/Vascular': '#A78BFA',
   'CirGeral/Bucomaxilo':  '#FB923C',
   // [HOB 2026-05-12] Entradas HOB pra PDF export
+  // [HOB 2026-05-13] Vascular reaberto: setor existia em foto física (27 pacientes carregados),
+  // consolidação 12/05 (Vascular→Neuro) revertida. Cor cyan distinta pra separar de Neuro (roxo).
   'Neuro':                '#A78BFA',
   'Vascular':             '#06B6D4',
   'Cirurgia':             '#FB923C',
@@ -23023,7 +23037,7 @@ function _cellConfiab(ind) {
   const idAttr = JSON.stringify(ind.id).replace(/"/g, '&quot;');
   return `<td class="cell-inline-edit cell-confiab cell-confiab-${conf || 'null'}" data-indicador-id="${escapeHtml(ind.id)}">
     <select class="cell-select cell-select-confiab" onchange="event.stopPropagation(); salvarIndicadorInline(${idAttr}, 'confiabilidade', this.value || null); renderIndicadorDrilldownIfOpen(${idAttr});" onclick="event.stopPropagation()" aria-label="Confiabilidade de ${escapeHtml(ind.nome)}">
-      <option value="" ${!conf ? 'selected' : ''}>— a definir</option>
+      <option value="" ${!conf ? 'selected' : ''}>Definir…</option>
       <option value="alta" ${conf === 'alta' ? 'selected' : ''}>Alta</option>
       <option value="media" ${conf === 'media' ? 'selected' : ''}>Média</option>
       <option value="baixa" ${conf === 'baixa' ? 'selected' : ''}>Baixa</option>
