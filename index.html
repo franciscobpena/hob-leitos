@@ -22638,15 +22638,25 @@ function renderHomeStatusBar() {
       pop.style.left = left + 'px';
       pop.style.top = top + 'px';
     }
+    // [HOB 2026-05-13 fix hover bridge] hide com delay 120ms permite mouse cruzar gap
+    // entre trigger e popover sem fechar. Listeners no pop cancelam hide quando mouse
+    // entra no popover (pra ler/scrollar/clicar). mouseleave do pop dispara hide.
+    let _hideTimer;
     function _show() {
+      clearTimeout(_hideTimer);
       pop.classList.add('is-visible');
       requestAnimationFrame(_positionPop);
     }
-    function _hide() { pop.classList.remove('is-visible'); }
+    function _hide() {
+      clearTimeout(_hideTimer);
+      _hideTimer = setTimeout(() => pop.classList.remove('is-visible'), 120);
+    }
     trigger.addEventListener('mouseenter', _show);
     trigger.addEventListener('mouseleave', _hide);
     trigger.addEventListener('focus', _show);
     trigger.addEventListener('blur', _hide);
+    pop.addEventListener('mouseenter', _show);
+    pop.addEventListener('mouseleave', _hide);
     window.addEventListener('scroll', () => { if (pop.classList.contains('is-visible')) _positionPop(); }, { passive: true });
     window.addEventListener('resize', () => { if (pop.classList.contains('is-visible')) _positionPop(); }, { passive: true });
   });
@@ -23565,12 +23575,20 @@ function renderIndicadores() {
       pop.style.left = left + 'px';
       pop.style.top = top + 'px';
     }
-    function _show() { pop.classList.add('is-visible'); requestAnimationFrame(_positionPop); }
-    function _hide() { pop.classList.remove('is-visible'); }
+    // [HOB 2026-05-13 fix hover bridge] mesma logica de delay+listeners no pop usada
+    // em renderKpisHome (linha ~22641). Permite mouse entrar no popover sem fechar.
+    let _hideTimer;
+    function _show() { clearTimeout(_hideTimer); pop.classList.add('is-visible'); requestAnimationFrame(_positionPop); }
+    function _hide() {
+      clearTimeout(_hideTimer);
+      _hideTimer = setTimeout(() => pop.classList.remove('is-visible'), 120);
+    }
     trigger.addEventListener('mouseenter', _show);
     trigger.addEventListener('mouseleave', _hide);
     trigger.addEventListener('focus', _show);
     trigger.addEventListener('blur', _hide);
+    pop.addEventListener('mouseenter', _show);
+    pop.addEventListener('mouseleave', _hide);
     window.addEventListener('scroll', () => { if (pop.classList.contains('is-visible')) _positionPop(); }, { passive: true });
     window.addEventListener('resize', () => { if (pop.classList.contains('is-visible')) _positionPop(); }, { passive: true });
   });
