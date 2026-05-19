@@ -8807,7 +8807,10 @@ function renderHeatmap(pts) {
       const ann = getAnn(p);
       // [Fase 55.5] PNA removido — carga cognitiva sem ganho operacional.
       const isLP= d > t;
-      const idx = allPatients.indexOf(p);
+      // [2026-05-19 CC#11] Fix openModal silencioso pra pacientes com leito_override (clone via _aplicarLeitoOverridesBatch). Lookup por idEpisodio resolve.
+      const idx = p.idEpisodio
+        ? allPatients.findIndex(x => x.idEpisodio === p.idEpisodio)
+        : allPatients.indexOf(p);
 
       // [Fase 8 WD-3] Bed-card como <button> p/ acessibilidade (foco via Tab + Enter/Space).
       // [Fase 47] Badge OV indica leito com override EGA/NIR. Botão lápis no canto abre modal de correção.
@@ -8949,7 +8952,10 @@ function renderLP(filtered, allPts) {
           const exc = d - t;
           const sp  = isSP(p);
           const ann = getAnn(p);
-          const idx = allPatients.indexOf(p);
+          // [2026-05-19 CC#11] Fix openModal silencioso — ver bed-card acima.
+          const idx = p.idEpisodio
+            ? allPatients.findIndex(x => x.idEpisodio === p.idEpisodio)
+            : allPatients.indexOf(p);
           return `<tr onclick="openModal(${idx})" style="cursor:pointer">
             <td class="td-mono">${p.numLeito}${ann?'&nbsp;<span style="font-size:8px;background:rgba(59,130,246,.8);color:#fff;padding:1px 4px;border-radius:3px;font-weight:700">PA</span>':''}</td>
             <td class="td-muted">${SHORT_WARD[p.setor]||p.setor||'—'}</td>
