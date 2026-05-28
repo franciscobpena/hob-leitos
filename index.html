@@ -20595,46 +20595,63 @@ async function salvarEspecialidadeModal() {
   }
 }
 
-/* [Fase 55.2/55.4] Exporta internações filtradas em Excel (.xls) — todas as colunas de internacoes_hmsa */
-// [2026-05-28] scope='historico' exporta só quem saiu (status != ativa); default exporta os ativos filtrados.
+// [2026-05-28] Excel espelha as MESMAS colunas da tabela na tela (sem a coluna Ações).
+//   default  -> aba Internados (intFiltrados, ativos filtrados)
+//   historico -> aba Histórico (status != ativa)
 function exportarInternacoesXLS(scope) {
   const isHist = (scope === 'historico');
-  const filtrados = isHist
-    ? (INT.internacoes || []).filter(i => i.status_internacao && i.status_internacao !== 'ativa')
-    : intFiltrados();
-  if (!filtrados.length) { showToast('Nada para exportar.', 'info'); return; }
   const STATUS_LABEL = { ativa: 'Ativa', alta_medica: 'Alta médica', transferida: 'Transferida', obito: 'Óbito', evasao: 'Evasão', cancelada: 'Cancelada' };
-  const fmtDateTime = v => v ? new Date(v).toLocaleString('pt-BR') : '';
-  const rows = filtrados.map(i => ({
-    ID:                     i.id || '',
-    Hospital:               i.hospital || '',
-    Atendimento:            i.atendimento || '',
-    Paciente:               abreviarNomePaciente(i.nome_paciente) || '',
-    Status:                 STATUS_LABEL[i.status_internacao] || i.status_internacao || '',
-    'Status (raw)':         i.status_internacao || '',
-    Setor:                  i.setor || '',
-    Leito:                  i.leito || '',
-    Especialidade:          i.especialidade || '',
-    'CID principal':        i.cid_principal || '',
-    Severidade:             i.grau_severidade ?? '',
-    'Data internação':      i.data_internacao || '',
-    'Data saída':           i.data_alta || '',
-    'Prev. alta DRG':       i.previsao_alta_drg || '',
-    'Prev. Kanban':         i.previsao_kanban || '',
-    'Permanência prevista': i.permanencia_prevista ?? '',
-    'Permanência real':     i.permanencia_real ?? '',
-    Pendência:              i.pendencia || '',
-    Observações:            i.observacoes || '',
-    'Fonte cadastro':       i.fonte_criacao || '',
-    'Criado por':           i.created_by || '',
-    'Atualizado por':       i.updated_by || '',
-    'Criado em':            fmtDateTime(i.created_at),
-    'Atualizado em':        fmtDateTime(i.updated_at)
-  }));
+  const fmtBr = (v) => { if (!v) return ''; const s = String(v).slice(0, 10).split('-'); return s.length === 3 ? `${s[2]}/${s[1]}/${s[0]}` : String(v); };
+  const calcDias = (entrada, saida) => {
+    if (!entrada) return '';
+    const dE = new Date(String(entrada).slice(0, 10));
+    const dS = saida ? new Date(String(saida).slice(0, 10)) : new Date();
+    const ms = dS - dE;
+    if (isNaN(ms) || ms < 0) return '';
+    const dias = Math.floor(ms / 86400000);
+    return dias === 0 ? '<1d' : `${dias}d`;
+  };
+
+  let rows;
+  if (isHist) {
+    const lista = (INT.internacoes || []).filter(i => i.status_internacao && i.status_internacao !== 'ativa');
+    if (!lista.length) { showToast('Nada para exportar.', 'info'); return; }
+    rows = lista.map(i => {
+      const saida = i.data_alta || (i.updated_at ? String(i.updated_at).slice(0, 10) : '');
+      return {
+        'Motivo':        STATUS_LABEL[i.status_internacao] || i.status_internacao || '',
+        'Paciente':      abreviarNomePaciente(i.nome_paciente) || '',
+        'Atendimento':   i.atendimento || '',
+        'Setor':         i.setor || '',
+        'Especialidade': i.especialidade || '',
+        'Leito':         i.leito || '',
+        'Admissão':      fmtBr(i.data_internacao),
+        'Saída':         fmtBr(saida),
+        'Permanência':   calcDias(i.data_internacao, saida)
+      };
+    });
+  } else {
+    const lista = intFiltrados();
+    if (!lista.length) { showToast('Nada para exportar.', 'info'); return; }
+    // Mesma ordem de colunas da tabela Internados (exceto Ações)
+    rows = lista.map(i => ({
+      'Leito':           i.leito || '',
+      'Status':          STATUS_LABEL[i.status_internacao] || i.status_internacao || '',
+      'Paciente':        abreviarNomePaciente(i.nome_paciente) || '',
+      'Atendimento':     i.atendimento || '',
+      'Setor':           i.setor || '',
+      'Especialidade':   i.especialidade || '',
+      'Severidade':      i.grau_severidade ?? '',
+      'Previsão DRG':    fmtBr(i.previsao_alta_drg),
+      'Previsão Kanban': fmtBr(i.previsao_kanban),
+      'Pendência':       i.pendencia || '',
+      'Data alta':       fmtBr(i.data_alta)
+    }));
+  }
   const data = new Date().toISOString().slice(0, 10);
-  const fname = isHist ? `internacoes-historico-${HOSPITAL_ID}-${data}.xls` : `internacoes-${HOSPITAL_ID}-${data}.xls`;
-  _downloadXLS(rows, fname, isHist ? 'Histórico Internações' : 'Internações');
-  showToast(`${rows.length} ${isHist ? 'saídas' : 'internações'} exportadas (${Object.keys(rows[0]).length} colunas).`, 'success');
+  const fname = isHist ? `internacoes-historico-${HOSPITAL_ID}-${data}.xls` : `internados-${HOSPITAL_ID}-${data}.xls`;
+  _downloadXLS(rows, fname, isHist ? 'Histórico Internações' : 'Internados');
+  showToast(`${rows.length} ${isHist ? 'saídas' : 'internados'} exportad${isHist ? 'as' : 'os'} (${Object.keys(rows[0]).length} colunas).`, 'success');
 }
 
 /* [Fase 55.13] Inline-add Setor em Internações — sem tabela cadastro (setor é jargão hospitalar fixo).
