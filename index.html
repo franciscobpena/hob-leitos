@@ -6676,7 +6676,6 @@ body.is-edit-focus [data-edit-focus] {
       </select>
       <input type="search" id="int-search" class="ab-filter" placeholder="Buscar nome, atendimento, CID..." style="min-width:220px">
       <button class="btn btn-ghost" onclick="intRecarregar()" title="Atualizar"><i aria-hidden="true" data-lucide="refresh-cw"></i></button>
-      <button class="btn btn-ghost" onclick="exportarInternacoesXLS()" title="Baixar lista filtrada em Excel" style="font-size:12px"><i aria-hidden="true" data-lucide="file-down"></i> Excel</button>
       <button class="btn btn-primary" onclick="intAbrirNovaInternacao()" title="Cadastrar nova internação" style="margin-left:8px"><i aria-hidden="true" data-lucide="plus"></i> Nova internação</button>
     </div>
     <!-- Controles pra Histórico -->
@@ -7153,9 +7152,9 @@ body.is-edit-focus [data-edit-focus] {
 <!-- [Fase 52/53] VIEW INTERNAÇÕES — Lista (ampliada estilo planilha) -->
 <div id="view-internacoes-lista" style="display:none">
 <main>
-  <section style="padding:0 16px">
-    <h1 class="view-title">Internados</h1>
-    <div style="font-size:12px;color:var(--textMuted);margin-bottom:16px">Pacientes internados agora. Cadastra direto na linha de cima (Tab navega, Enter no último salva). Click numa célula com hover pra editar direto. Quem recebeu saída vai pra aba <strong>Histórico</strong>.</div>
+  <section style="padding:0 16px 8px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+    <h1 class="view-title" style="margin:0">Internados</h1>
+    <button class="btn btn-ghost" onclick="exportarInternacoesXLS()" title="Baixar lista de internados em Excel" style="font-size:12px;white-space:nowrap;"><i aria-hidden="true" data-lucide="file-down"></i> Excel</button>
   </section>
 
   <!-- [Fase 53/54] Input row em grid CSS responsivo (3 linhas naturais, cabe em 1100px+) -->
@@ -20525,6 +20524,9 @@ function intRenderHistorico() {
         <td>${fmtDate(i.data_internacao)}</td>
         <td>${fmtDate(saida)}</td>
         <td>${calcDias(i.data_internacao, saida)}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="cad-btn-icon cad-btn-danger" onclick="_intExcluirInline('${i.id}','${(abreviarNomePaciente(i.nome_paciente) || '').replace(/'/g, '&#39;')}')" title="Excluir registro do banco (pede senha)" aria-label="Excluir"><i data-lucide="trash-2"></i></button>
+        </td>
       </tr>`;
   }).join('');
 
@@ -20541,6 +20543,7 @@ function intRenderHistorico() {
           <th style="width:100px">Admissão</th>
           <th style="width:100px">Saída</th>
           <th style="width:80px">Permanência</th>
+          <th style="width:60px;text-align:right">Ações</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
