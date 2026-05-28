@@ -6667,11 +6667,7 @@ body.is-edit-focus [data-edit-focus] {
     </div>
     <!-- [Fase 52] Sub-tabs de Internações -->
     <div class="sub-tabs-controls" id="hdr-int-controls" style="display:none">
-      <select id="int-status-filter" class="ab-filter">
-        <option value="ativa" selected>Ativas</option>
-        <option value="alta_medica">Já saíram</option>
-        <option value="">Todas</option>
-      </select>
+      <!-- [2026-05-28] int-status-filter removido: "Internados" = só ativos. Quem saiu vive na aba Histórico. -->
       <select id="int-setor-filter" class="ab-filter">
         <option value="">Setor: todos</option>
       </select>
@@ -6716,6 +6712,9 @@ body.is-edit-focus [data-edit-focus] {
       </button>
       <button class="sub-tab" id="tab-sub-int-lista" onclick="switchView('internacoes','lista')">
         <i aria-hidden="true" data-lucide="list-ordered"></i> Internados
+      </button>
+      <button class="sub-tab" id="tab-sub-int-historico" onclick="switchView('internacoes','historico')">
+        <i aria-hidden="true" data-lucide="history"></i> Histórico
       </button>
     </div>
   </div>
@@ -7155,8 +7154,8 @@ body.is-edit-focus [data-edit-focus] {
 <div id="view-internacoes-lista" style="display:none">
 <main>
   <section style="padding:0 16px">
-    <h1 class="view-title">Internações · base de dados</h1>
-    <div style="font-size:12px;color:var(--textMuted);margin-bottom:16px">Cadastra direto na linha de cima (Tab navega, Enter no último salva). Tabela embaixo mostra base completa. Click numa célula com hover pra editar direto.</div>
+    <h1 class="view-title">Internados</h1>
+    <div style="font-size:12px;color:var(--textMuted);margin-bottom:16px">Pacientes internados agora. Cadastra direto na linha de cima (Tab navega, Enter no último salva). Click numa célula com hover pra editar direto. Quem recebeu saída vai pra aba <strong>Histórico</strong>.</div>
   </section>
 
   <!-- [Fase 53/54] Input row em grid CSS responsivo (3 linhas naturais, cabe em 1100px+) -->
@@ -7202,6 +7201,28 @@ body.is-edit-focus [data-edit-focus] {
     <div class="std-card">
       <div id="int-stats" style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--textMuted)"></div>
       <div id="int-lista-wrap" style="overflow:auto;max-height:60vh"></div>
+    </div>
+  </section>
+  <div class="footer-mount"></div>
+</main>
+</div>
+
+<!-- [2026-05-28] VIEW INTERNAÇÕES — Histórico (saídas: alta médica / óbito / evasão) -->
+<div id="view-internacoes-historico" style="display:none">
+<main>
+  <section style="padding:0 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div>
+      <h1 class="view-title">Histórico de internações</h1>
+      <div style="font-size:12px;color:var(--textMuted);margin-bottom:16px">Pacientes que já saíram: alta médica, óbito ou evasão. Mais recentes em cima.</div>
+    </div>
+    <div style="margin-top:8px;">
+      <button class="btn btn-ghost" onclick="exportarInternacoesXLS('historico')" title="Baixar histórico em Excel" style="font-size:12px;white-space:nowrap;"><i aria-hidden="true" data-lucide="file-down"></i> Excel</button>
+    </div>
+  </section>
+  <section style="padding:0 16px 24px 16px">
+    <div class="std-card">
+      <div id="int-hist-stats" style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--textMuted)"></div>
+      <div id="int-hist-wrap" style="overflow:auto;max-height:70vh"></div>
     </div>
   </section>
   <div class="footer-mount"></div>
@@ -15992,8 +16013,14 @@ async function _intHandlerAlocarFila(internacaoId) {
 }
 
 /** [Maestro 05/mai] Modal "Dar alta" — data default hoje, checkbox confirma. */
+// [2026-05-28] Modal de saída unificado: motivo (alta/óbito/evasão) + data com poka-yoke
+// (nunca antes da admissão, nunca no futuro). Grava data_alta + status_internacao pros 3 motivos.
+// Libera o leito no painel de Gestão de Leitos (status != ativa => leito livre).
 async function _intHandlerDarAlta(internacaoHmsaId) {
-  const url = `${SB_URL}/rest/v1/internacoes_hmsa?id=eq.${encodeURIComponent(internacaoHmsaId)}&select=id,nome_paciente,leito&limit=1`;
+  if (typeof isEditAuthed === 'function' && !isEditAuthed()) {
+    if (typeof requireEditAuth === 'function') { requireEditAuth(() => _intHandlerDarAlta(internacaoHmsaId)); return; }
+  }
+  const url = `${SB_URL}/rest/v1/internacoes_hmsa?id=eq.${encodeURIComponent(internacaoHmsaId)}&select=id,nome_paciente,leito,data_internacao&limit=1`;
   const resp = await fetch(url, { headers: SB_H });
   if (!resp.ok) { showToast('Paciente não encontrado', 'error'); return; }
   const rows = await resp.json();
@@ -16001,31 +16028,48 @@ async function _intHandlerDarAlta(internacaoHmsaId) {
   const p = rows[0];
 
   const hoje = new Date().toISOString().slice(0, 10);
-  document.getElementById('acao-modal-title').textContent = 'Dar alta · ' + (abreviarNomePaciente(p.nome_paciente) || '—');
+  const dataAdm = (p.data_internacao || '').slice(0, 10); // poka-yoke: piso da data de saída
+  const brDate = (iso) => { const s = String(iso || '').slice(0, 10).split('-'); return s.length === 3 ? `${s[2]}/${s[1]}/${s[0]}` : (iso || ''); };
+  document.getElementById('acao-modal-title').textContent = 'Registrar saída · ' + (abreviarNomePaciente(p.nome_paciente) || '—');
   document.getElementById('acao-modal-body').innerHTML = `
-    <div style="font-size:11px;color:var(--textMuted);margin-bottom:8px">
-      Leito ${escapeHtml(p.leito || '—')} ficará livre após confirmar.
+    <div style="font-size:11px;color:var(--textMuted);margin-bottom:10px">
+      Leito ${escapeHtml(p.leito || '—')} fica livre no painel de Gestão de Leitos após confirmar.${dataAdm ? ` Admissão em ${brDate(dataAdm)}.` : ''}
     </div>
-    <label>Data da alta</label>
-    <input type="date" id="alta-data" value="${hoje}" style="margin-bottom:8px">
+    <label>Motivo da saída</label>
+    <select id="alta-motivo" style="margin-bottom:8px">
+      <option value="alta_medica">Alta médica</option>
+      <option value="obito">Óbito</option>
+      <option value="evasao">Evasão hospitalar</option>
+    </select>
+    <label>Data da saída</label>
+    <input type="date" id="alta-data" value="${hoje}"${dataAdm ? ` min="${dataAdm}"` : ''} max="${hoje}" style="margin-bottom:8px">
+    <div id="alta-erro" style="display:none;color:#ef4444;font-size:11px;margin-bottom:8px"></div>
     <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
       <input type="checkbox" id="alta-confirm">
-      <span>Confirmo que paciente recebeu alta médica nesta data</span>
+      <span>Confirmo a saída do paciente nesta data</span>
     </label>
   `;
 
   document.getElementById('acao-modal-save').onclick = async () => {
+    const motivo = document.getElementById('alta-motivo').value;
     const data = document.getElementById('alta-data').value;
     const ok = document.getElementById('alta-confirm').checked;
-    if (!data) { showToast('Selecione a data.', 'warning'); return; }
-    if (!ok) { showToast('Marque o check pra confirmar.', 'warning'); return; }
+    const errEl = document.getElementById('alta-erro');
+    const showErr = (m) => { if (errEl) { errEl.textContent = m; errEl.style.display = 'block'; } else showToast(m, 'warning'); };
+    if (errEl) errEl.style.display = 'none';
+    if (!motivo) { showErr('Escolha o motivo da saída.'); return; }
+    if (!data) { showErr('Selecione a data da saída.'); return; }
+    // Poka-yoke: data de saída nunca anterior à admissão, nunca no futuro
+    if (dataAdm && data < dataAdm) { showErr(`Data de saída não pode ser anterior à admissão (${brDate(dataAdm)}).`); return; }
+    if (data > hoje) { showErr('Data de saída não pode ser no futuro.'); return; }
+    if (!ok) { showErr('Marque o check pra confirmar.'); return; }
     try {
       const r = await fetch(`${SB_URL}/rest/v1/internacoes_hmsa?id=eq.${encodeURIComponent(internacaoHmsaId)}`, {
         method: 'PATCH',
         headers: { ...SB_H, 'Prefer': 'return=minimal' },
         body: JSON.stringify({
           data_alta: data,
-          status_internacao: 'alta_medica',
+          status_internacao: motivo,
           updated_at: new Date().toISOString(),
           updated_by: getUserName() || 'maestro'
         })
@@ -16036,11 +16080,14 @@ async function _intHandlerDarAlta(internacaoHmsaId) {
         _onda6MarcarLeitoVagado(p.leito);
       }
       closeAcaoEditModal();
-      showToast(`✓ Alta de ${abreviarNomePaciente(p.nome_paciente)} em ${data}. Leito ${p.leito || '—'} livre.`, 'success');
+      const motivoLabel = { alta_medica: 'Alta médica', obito: 'Óbito', evasao: 'Evasão' }[motivo] || motivo;
+      showToast(`✓ ${motivoLabel} de ${abreviarNomePaciente(p.nome_paciente)} em ${brDate(data)}. Leito ${p.leito || '—'} livre.`, 'success');
       INT.loaded = false;
       if (typeof intFetchAll === 'function') await intFetchAll();
       if (typeof intRenderLista === 'function') intRenderLista();
+      if (typeof intRenderHistorico === 'function') intRenderHistorico();
       if (typeof _atualizarFluxoStepper === 'function') _atualizarFluxoStepper();
+      if (typeof _atualizarBadgesNavTabs === 'function') _atualizarBadgesNavTabs();
     } catch (err) {
       showToast('Erro: ' + err.message, 'error');
     }
@@ -17133,7 +17180,7 @@ function switchView(view, subView, subSubView) {
 
   // ─── Esconder TODAS as views ───
   // [Fase 50/51/52 + Maestro 05/mai] internacoes-fila adicionada (criada dinâmica, antes ficava órfã)
-  ['home','dashboard','action-plan','indicadores','kaizens','agenda-lean','ferramentas','preworks','simulador-nedocs','analise-visao-geral','analise-raio-x','analise-listas','analise-insercao','analise-historico','internacoes-lista','internacoes-fila','internacoes-conferencias','internacoes-dicionario','maturidade-nir','maturidade-nir-detalhe','maturidade-nir-historico','cockpit-nir','retaguarda-fila','retaguarda-cards','retaguarda-historico'].forEach(v => {
+  ['home','dashboard','action-plan','indicadores','kaizens','agenda-lean','ferramentas','preworks','simulador-nedocs','analise-visao-geral','analise-raio-x','analise-listas','analise-insercao','analise-historico','internacoes-lista','internacoes-fila','internacoes-historico','internacoes-conferencias','internacoes-dicionario','maturidade-nir','maturidade-nir-detalhe','maturidade-nir-historico','cockpit-nir','retaguarda-fila','retaguarda-cards','retaguarda-historico'].forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = 'none';
   });
@@ -17204,6 +17251,9 @@ function switchView(view, subView, subSubView) {
     if (subView === 'fila') {
       document.getElementById('view-internacoes-fila').style.display = 'block';
       if (typeof renderInternacoesFila === 'function') renderInternacoesFila();
+    } else if (subView === 'historico') {
+      document.getElementById('view-internacoes-historico').style.display = 'block';
+      if (typeof renderInternacoes === 'function') renderInternacoes('historico');
     } else {
       document.getElementById('view-internacoes-lista').style.display = 'block';
       if (typeof renderInternacoes === 'function') renderInternacoes('lista');
@@ -17298,12 +17348,15 @@ function switchView(view, subView, subSubView) {
   const tabSubRetagBar = document.getElementById('tab-sub-retag-barreiras');
   if (tabSubRetagBar) tabSubRetagBar.classList.toggle('active', isRetaguarda && subView === 'barreiras');
   // [Onda 5 T11] Internações tem 2 sub-tabs: Internados + Fila (segmentada por origem)
+  const isHistInt = (isInternacoes && subView === 'historico');
   const isLista = (isInternacoes && (subView === 'lista' || !subView));
   const isFilaOrigem = (isInternacoes && subView === 'fila');
   const tabSubIntLista = document.getElementById('tab-sub-int-lista');
   const tabSubIntFila = document.getElementById('tab-sub-int-fila');
+  const tabSubIntHist = document.getElementById('tab-sub-int-historico');
   if (tabSubIntLista) tabSubIntLista.classList.toggle('active', isLista);
   if (tabSubIntFila) tabSubIntFila.classList.toggle('active', isFilaOrigem);
+  if (tabSubIntHist) tabSubIntHist.classList.toggle('active', isHistInt);
 
   // [Maestro 05/mai] Marca step ativo. Step 02 = /internacoes/lista (lista de pacientes input pros cards).
   if (typeof _atualizarFluxoStepperActive === 'function') {
@@ -20224,7 +20277,7 @@ async function renderInternacoes(subView) {
     const ok = await intFetchAll();
     if (!ok) return;
   }
-  ['lista','conferencias','dicionario'].forEach(s => {
+  ['lista','historico','conferencias','dicionario'].forEach(s => {
     const el = document.getElementById('view-internacoes-' + s);
     if (el) el.style.display = (s === subView) ? 'block' : 'none';
   });
@@ -20236,6 +20289,7 @@ async function renderInternacoes(subView) {
   }
   switch (subView) {
     case 'lista': intRenderLista(); break;
+    case 'historico': intRenderHistorico(); break;
     case 'conferencias': intRenderConferencias(); break;
     case 'dicionario': intRenderDicionario(); break;
   }
@@ -20264,7 +20318,7 @@ function intPopularFiltros() {
     espSel.innerHTML = '<option value="">Especialidade: todas</option>' + especs.map(s => `<option value="${s}">${s}</option>`).join('');
     if (cur) espSel.value = cur;
   }
-  ['int-status-filter','int-setor-filter','int-esp-filter'].forEach(id => {
+  ['int-setor-filter','int-esp-filter'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.dataset.bound) {
       el.dataset.bound = '1';
@@ -20287,9 +20341,9 @@ function intPopularFiltros() {
 }
 
 function intFiltrados() {
-  let arr = INT.internacoes.slice();
+  // [2026-05-28] "Internados" = só ativos. Quem saiu vive na aba Histórico.
+  let arr = INT.internacoes.filter(i => i.status_internacao === 'ativa');
   const f = INT.filtros;
-  if (f.status) arr = arr.filter(i => i.status_internacao === f.status);
   if (f.setor) arr = arr.filter(i => i.setor === f.setor);
   if (f.esp) arr = arr.filter(i => ((i.especialidade || '').toString().trim().toUpperCase()) === f.esp);
   // [Fase 55.10] Filtros por coluna (filter row da tabela) — todos client-side, contains-insensitive
@@ -20322,9 +20376,10 @@ function intRenderLista() {
   const stats = document.getElementById('int-stats');
   if (!wrap) return;
   const filtrados = intFiltrados();
-  if (stats) stats.textContent = `Mostrando ${filtrados.length} de ${INT.internacoes.length} internações.`;
+  const totalAtivos = INT.internacoes.filter(i => i.status_internacao === 'ativa').length;
+  if (stats) stats.textContent = `Mostrando ${filtrados.length} de ${totalAtivos} internado${totalAtivos === 1 ? '' : 's'} ativo${totalAtivos === 1 ? '' : 's'}.`;
   if (!filtrados.length) {
-    wrap.innerHTML = '<div class="empty-msg">Nada encontrado pra esse filtro.</div>';
+    wrap.innerHTML = '<div class="empty-msg">Nenhum internado ativo pra esse filtro.</div>';
     return;
   }
   // [Fase 55.10] Tabela: Leito separado como 1ª col + Setor separado + filter row Excel-like.
@@ -20352,16 +20407,14 @@ function intRenderLista() {
         <td class="hist-cell-editable int-col-pendencia" onclick="intEditarCelula('${i.id}','pendencia',this)" title="${(i.pendencia || '').replace(/"/g,'&quot;')}">${pendShort}</td>
         <td title="Data alta médica">${dataAlta}</td>
         <td style="text-align:right;white-space:nowrap">
-          ${isAtivo ? `<button class="cad-btn-icon cad-btn-success" onclick="_intHandlerDarAlta('${i.id}')" title="Dar alta médica" aria-label="Dar alta"><i data-lucide="check-circle"></i></button>` : ''}
+          ${isAtivo ? `<button class="cad-btn-icon cad-btn-success" onclick="_intHandlerDarAlta('${i.id}')" title="Registrar saída (alta médica / óbito / evasão)" aria-label="Registrar saída"><i data-lucide="log-out"></i></button>` : ''}
           <button class="cad-btn-icon" onclick="intAbrirEditar('${i.id}')" title="Editar tudo"><i data-lucide="pencil"></i></button>
-          ${isAtivo ? `<button class="cad-btn-icon" onclick="intMarcarSaida('${i.id}')" title="Marcar saída (transferência/óbito/evasão)"><i data-lucide="log-out"></i></button>` : ''}
           <button class="cad-btn-icon cad-btn-danger" onclick="_intExcluirInline('${i.id}','${(abreviarNomePaciente(i.nome_paciente) || '').replace(/'/g, '&#39;')}')" title="Excluir registro de internação (pede senha)" aria-label="Excluir"><i data-lucide="trash-2"></i></button>
         </td>
       </tr>`;
   }).join('');
 
   // Filter row: input por coluna (Excel-like). Status e Sev usam select. Resto contains.
-  const statusOpts = [['','Todos'],['ativa','Ativa'],['alta_medica','Saiu'],['transferida','Transf.'],['obito','Óbito'],['evasao','Evasão'],['cancelada','Cancel.']];
   const sevOpts = [['','—'],['1','1'],['2','2'],['3','3'],['4','4']];
   const fInput = (key, ph='Filtrar...') => `<input type="search" class="int-col-filter" data-fk="${key}" value="${(f[key]||'').replace(/"/g,'&quot;')}" placeholder="${ph}">`;
   const fSelect = (key, opts) => `<select class="int-col-filter" data-fk="${key}">${opts.map(([v,l]) => `<option value="${v}" ${f[key]===v?'selected':''}>${l}</option>`).join('')}</select>`;
@@ -20385,7 +20438,7 @@ function intRenderLista() {
         </tr>
         <tr class="int-filter-row">
           <th>${fInput('col_leito','17.2')}</th>
-          <th>${fSelect('status', statusOpts)}</th>
+          <th></th>
           <th>${fInput('col_paciente','Nome')}</th>
           <th>${fInput('col_atend','número')}</th>
           <th>${fInput('col_setor','Setor')}</th>
@@ -20412,6 +20465,86 @@ function intRenderLista() {
     });
   });
 
+  lucideRefresh();
+}
+
+// [2026-05-28] Histórico de internações: pacientes que já saíram (status != ativa).
+// "Saída" = data_alta (preenchida no modal de saída); fallback updated_at pra registros legados.
+function intRenderHistorico() {
+  const wrap = document.getElementById('int-hist-wrap');
+  const stats = document.getElementById('int-hist-stats');
+  if (!wrap) return;
+  const saidaDe = (i) => i.data_alta || (i.updated_at ? String(i.updated_at).slice(0, 10) : '');
+  const lista = (INT.internacoes || [])
+    .filter(i => i.status_internacao && i.status_internacao !== 'ativa')
+    .sort((a, b) => String(saidaDe(b)).localeCompare(String(saidaDe(a))));
+
+  if (stats) {
+    const n = lista.length;
+    const c = (s) => lista.filter(i => i.status_internacao === s).length;
+    stats.textContent = `${n} saída${n === 1 ? '' : 's'} · ${c('alta_medica')} alta médica · ${c('obito')} óbito · ${c('evasao')} evasão`;
+  }
+  if (!lista.length) {
+    wrap.innerHTML = '<div class="empty-msg">Nenhuma saída registrada ainda.</div>';
+    return;
+  }
+
+  const fmtDate = (iso) => {
+    if (!iso) return '—';
+    const s = String(iso).slice(0, 10).split('-');
+    return s.length === 3 ? `${s[2]}/${s[1]}/${s[0]}` : String(iso);
+  };
+  const calcDias = (entrada, saida) => {
+    if (!entrada) return '—';
+    const dE = new Date(String(entrada).slice(0, 10));
+    const dS = saida ? new Date(String(saida).slice(0, 10)) : new Date();
+    const ms = dS - dE;
+    if (isNaN(ms) || ms < 0) return '—';
+    const dias = Math.floor(ms / 86400000);
+    return dias === 0 ? '<1d' : `${dias}d`;
+  };
+  const STATUS = {
+    alta_medica: { label: 'Alta médica', cor: '34,197,94' },
+    obito:       { label: 'Óbito',       cor: '148,163,184' },
+    evasao:      { label: 'Evasão',      cor: '249,115,22' },
+    transferida: { label: 'Transferida', cor: '59,130,246' },
+    cancelada:   { label: 'Cancelada',   cor: '107,114,128' }
+  };
+
+  const rows = lista.map(i => {
+    const st = STATUS[i.status_internacao] || { label: i.status_internacao, cor: '107,114,128' };
+    const saida = saidaDe(i);
+    return `
+      <tr>
+        <td><span style="background:rgba(${st.cor},0.15);color:rgba(${st.cor},1);border:1px solid rgba(${st.cor},0.40);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap">${st.label}</span></td>
+        <td title="Nome abreviado por LGPD">${abreviarNomePaciente(i.nome_paciente) || '—'}</td>
+        <td>${i.atendimento || '—'}</td>
+        <td>${i.setor || '—'}</td>
+        <td>${i.especialidade || '—'}</td>
+        <td>${i.leito || '—'}</td>
+        <td>${fmtDate(i.data_internacao)}</td>
+        <td>${fmtDate(saida)}</td>
+        <td>${calcDias(i.data_internacao, saida)}</td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table class="hist-table int-table-compact">
+      <thead>
+        <tr>
+          <th style="width:110px">Motivo</th>
+          <th>Paciente</th>
+          <th style="width:90px">Atend.</th>
+          <th style="width:100px">Setor</th>
+          <th style="width:130px">Especialidade</th>
+          <th style="width:70px">Leito</th>
+          <th style="width:100px">Admissão</th>
+          <th style="width:100px">Saída</th>
+          <th style="width:80px">Permanência</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   lucideRefresh();
 }
 
@@ -20460,10 +20593,14 @@ async function salvarEspecialidadeModal() {
 }
 
 /* [Fase 55.2/55.4] Exporta internações filtradas em Excel (.xls) — todas as colunas de internacoes_hmsa */
-function exportarInternacoesXLS() {
-  const filtrados = intFiltrados();
+// [2026-05-28] scope='historico' exporta só quem saiu (status != ativa); default exporta os ativos filtrados.
+function exportarInternacoesXLS(scope) {
+  const isHist = (scope === 'historico');
+  const filtrados = isHist
+    ? (INT.internacoes || []).filter(i => i.status_internacao && i.status_internacao !== 'ativa')
+    : intFiltrados();
   if (!filtrados.length) { showToast('Nada para exportar.', 'info'); return; }
-  const STATUS_LABEL = { ativa: 'Ativa', alta_medica: 'Saiu', transferida: 'Transferida', obito: 'Óbito', evasao: 'Evasão', cancelada: 'Cancelada' };
+  const STATUS_LABEL = { ativa: 'Ativa', alta_medica: 'Alta médica', transferida: 'Transferida', obito: 'Óbito', evasao: 'Evasão', cancelada: 'Cancelada' };
   const fmtDateTime = v => v ? new Date(v).toLocaleString('pt-BR') : '';
   const rows = filtrados.map(i => ({
     ID:                     i.id || '',
@@ -20478,6 +20615,7 @@ function exportarInternacoesXLS() {
     'CID principal':        i.cid_principal || '',
     Severidade:             i.grau_severidade ?? '',
     'Data internação':      i.data_internacao || '',
+    'Data saída':           i.data_alta || '',
     'Prev. alta DRG':       i.previsao_alta_drg || '',
     'Prev. Kanban':         i.previsao_kanban || '',
     'Permanência prevista': i.permanencia_prevista ?? '',
@@ -20491,8 +20629,9 @@ function exportarInternacoesXLS() {
     'Atualizado em':        fmtDateTime(i.updated_at)
   }));
   const data = new Date().toISOString().slice(0, 10);
-  _downloadXLS(rows, `internacoes-${HOSPITAL_ID}-${data}.xls`, 'Internações');
-  showToast(`${rows.length} internações exportadas (${Object.keys(rows[0]).length} colunas).`, 'success');
+  const fname = isHist ? `internacoes-historico-${HOSPITAL_ID}-${data}.xls` : `internacoes-${HOSPITAL_ID}-${data}.xls`;
+  _downloadXLS(rows, fname, isHist ? 'Histórico Internações' : 'Internações');
+  showToast(`${rows.length} ${isHist ? 'saídas' : 'internações'} exportadas (${Object.keys(rows[0]).length} colunas).`, 'success');
 }
 
 /* [Fase 55.13] Inline-add Setor em Internações — sem tabela cadastro (setor é jargão hospitalar fixo).
@@ -20751,25 +20890,10 @@ function intEditarCelula(id, campo, td, tipo) {
 }
 
 /* [Fase 53] Marcar saída direto da tabela */
+// [2026-05-28] Unificado no modal de saída (motivo + data + poka-yoke).
+// Antes forçava status='alta_medica' e NÃO gravava data_alta (óbito/evasão ficavam sem data).
 async function intMarcarSaida(id) {
-  if (typeof isEditAuthed === 'function' && !isEditAuthed()) {
-    if (typeof requireEditAuth === 'function') { requireEditAuth(() => intMarcarSaida(id)); return; }
-  }
-  if (!confirm('Marcar saída deste paciente? Status muda pra "alta médica" e auditoria registra.')) return;
-  const userName = ((typeof getUserName === 'function' && getUserName()) || 'local');
-  // [Fase 56 P0] Optimistic locking
-  const iCurrent = INT.internacoes.find(x => x.id === id);
-  const updatedAt = iCurrent?.updated_at;
-  const result = await sbPatchOptimistic('internacoes_hmsa', id, updatedAt,
-    { status_internacao: 'alta_medica', updated_by: userName }, 'marcar saída');
-  if (!result.ok) {
-    INT.loaded = false; await intFetchAll(); intRenderLista();
-    return;
-  }
-  INT.loaded = false;
-  await intFetchAll();
-  intRenderLista();
-  intToast(`Saída marcada · ${id}`);
+  return _intHandlerDarAlta(id);
 }
 
 function intRenderConferencias() {
