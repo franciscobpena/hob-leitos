@@ -446,6 +446,13 @@ section { margin-bottom:28px; }
 .bed-card.f2 { background:var(--f2-bg); border-color:var(--f2-brd); color:var(--f2-txt); }
 .bed-card.f3 { background:var(--f3-bg); border-color:var(--f3-brd); color:var(--f3-txt); }
 .bed-card.f4 { background:var(--f4-bg); border-color:var(--f4-brd); color:var(--f4-txt); }
+.bed-card.f-ok      { background: rgba(148,163,184,0.10); border-color: rgba(148,163,184,0.30); color: var(--textPrimary, #F1F5F9); }
+.bed-card.f-due     { background: rgba(245,158,11,0.22); border-color: rgba(245,158,11,0.60); color: #FCD34D; }
+.bed-card.f-over-1  { background: hsla(0,75%,65%,0.22); border-color: hsla(0,75%,65%,0.55); color: #FECACA; }
+.bed-card.f-over-2  { background: hsla(0,75%,55%,0.30); border-color: hsla(0,75%,55%,0.65); color: #FECACA; }
+.bed-card.f-over-3  { background: hsla(0,75%,45%,0.45); border-color: hsla(0,75%,45%,0.80); color: #FEE2E2; }
+.bed-card.f-over-4  { background: hsla(0,80%,35%,0.65); border-color: hsla(0,80%,35%,0.85); color: #FEE2E2; }
+.bed-card.f-no-drg  { background: hsla(0,70%,50%,0.30); border-color: hsla(0,70%,50%,0.70); color: #FECACA; }
 
 @keyframes pulse-border {
   0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.55); }
@@ -6715,6 +6722,9 @@ body.is-edit-focus [data-edit-focus] {
       <button class="sub-tab" id="tab-sub-int-historico" onclick="switchView('internacoes','historico')">
         <i aria-hidden="true" data-lucide="history"></i> Histórico
       </button>
+      <button class="sub-tab" id="tab-sub-int-cirurgica" onclick="switchView('internacoes','cirurgica')">
+        <i aria-hidden="true" data-lucide="calendar-clock"></i> Fila Cirúrgica <span class="nav-tab-badge" data-badge="sub-int-cirurgica">—</span>
+      </button>
     </div>
   </div>
 </header>
@@ -7169,7 +7179,7 @@ body.is-edit-focus [data-edit-focus] {
             <button type="button" class="ins-add-btn" onclick="intAbrirAddSetor(this)" title="Adicionar novo setor" aria-label="Adicionar novo setor">+</button>
           </div>
         </div>
-        <div class="iif iif-leito"><label>Leito</label><input type="text" id="int-in-leito" class="ins-cell" placeholder="17.2"></div>
+        <div class="iif iif-leito"><label for="int-in-leito">Leito</label><input type="text" id="int-in-leito" class="ins-cell" list="int-leito-datalist" autocomplete="off" spellcheck="false" placeholder="17.2"><datalist id="int-leito-datalist"></datalist></div>
         <div class="iif iif-esp"><label>Especialidade * <i aria-hidden="true" data-lucide="info" class="th-info" title="Área médica responsável pelo paciente (ex.: Ortopedia, Clínica Médica). Não muda o agrupamento dos cards no dashboard — isso é função do Setor."></i></label>
           <div class="ins-with-add">
             <select id="int-in-esp" class="ins-cell" required></select>
@@ -7198,12 +7208,114 @@ body.is-edit-focus [data-edit-focus] {
 
   <section style="padding:0 16px 24px 16px">
     <div class="std-card">
-      <div id="int-stats" style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--textMuted)"></div>
+      <div id="int-stats" aria-live="polite" aria-atomic="true" style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--textMuted)"></div>
       <div id="int-lista-wrap" style="overflow:auto;max-height:60vh"></div>
     </div>
   </section>
   <div class="footer-mount"></div>
 </main>
+</div>
+
+<!-- [CC#22 30/mai] VIEW INTERNAÇÕES — Fila Cirúrgica (table-backed fila_cirurgica_hob, 2 eixos status+prioridade). Substitui a versão 29/mai de retorno-cirúrgico. -->
+<style>
+/* [CC#22 31/mai v2] Fila Cirúrgica — tokens do design-system (dark navy + teal + farol). */
+.fila-chip { padding:2px 9px; border-radius:10px; font-size:11px; font-weight:700; white-space:nowrap; display:inline-block; border:1px solid transparent; }
+.fila-chip.pri-alta { background:var(--f3-bg); color:var(--f3-txt); border-color:var(--f3-brd); }
+.fila-chip.pri-media { background:var(--f2-bg); color:var(--f2-txt); border-color:var(--f2-brd); }
+.fila-chip.pri-baixa { background:var(--f0-bg); color:var(--f0-txt); border-color:var(--f0-brd); }
+.fila-chip.st-em_preparo { background:rgba(184,196,214,.12); color:var(--textMuted); border-color:rgba(184,196,214,.25); }
+.fila-chip.st-apto { background:rgba(13,148,136,.20); color:#5EEAD4; border-color:rgba(13,148,136,.40); }
+.fila-chip.st-agendado { background:var(--f1-bg); color:var(--f1-txt); border-color:var(--f1-brd); }
+.fila-chip.st-operado { background:var(--f0-bg); color:var(--f0-txt); border-color:var(--f0-brd); }
+.fila-chip.st-suspenso { background:rgba(184,196,214,.10); color:var(--textMuted); border-color:rgba(184,196,214,.20); }
+.fila-tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
+.fila-tbl th { text-align:left; padding:6px 8px; color:var(--textMuted); font-weight:600; border-bottom:1px solid var(--border); font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; }
+.fila-tbl td { padding:8px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.fila-grp td { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:4px 8px; }
+.fila-grp.grp-over td { background:var(--f3-bg); color:var(--f3-txt); }
+.fila-grp.grp-near td { background:var(--f2-bg); color:var(--f2-txt); }
+.fila-grp.grp-ok td { background:var(--f0-bg); color:var(--f0-txt); }
+.fila-rowover { background:rgba(239,68,68,.06); }
+.fila-sub { color:var(--textMuted); font-size:11px; }
+.fila-bar { height:6px; border-radius:4px; background:var(--border); position:relative; width:92px; overflow:hidden; margin-top:3px; }
+.fila-bar > span { position:absolute; left:0; top:0; bottom:0; border-radius:4px; }
+.fila-bar.red > span { background:var(--red); } .fila-bar.amb > span { background:var(--amber); } .fila-bar.grn > span { background:var(--green); }
+.over-t { color:var(--f3-txt); font-weight:700; } .ok-t { color:var(--f0-txt); font-weight:600; }
+.fila-semdata { color:var(--amber); font-weight:600; }
+.fila-info { font-size:10px; color:var(--textMuted); cursor:help; border-bottom:1px dotted var(--textMuted); }
+.fila-filtro { font-size:11.5px; padding:4px 8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--textMuted); }
+.fila-toggle { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; font-size:12px; }
+.fila-toggle .fc-tg { padding:5px 12px; cursor:pointer; }
+.fila-toggle .fc-tg.on { background:var(--teal); color:#06231f; font-weight:700; }
+.fila-toggle .fc-tg.off { background:transparent; color:var(--textMuted); }
+.fila-col { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px; min-width:0; flex:1; }
+.fila-colh { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--teal); margin-bottom:8px; display:flex; justify-content:space-between; }
+.fila-mini { background:var(--card); border:1px solid var(--border); border-left:4px solid var(--textMuted); border-radius:7px; padding:7px 8px; margin-bottom:7px; font-size:11.5px; }
+.fila-mini.ml-alta { border-left-color:var(--red); } .fila-mini.ml-media { border-left-color:var(--amber); } .fila-mini.ml-baixa { border-left-color:var(--green); }
+.fila-rtag { font-size:9.5px; font-weight:700; text-transform:uppercase; padding:1px 6px; border-radius:6px; margin-left:6px; }
+.fila-rtag.tag-forte { background:var(--f0-bg); color:var(--f0-txt); }
+.fila-rtag.tag-validar { background:var(--f2-bg); color:var(--f2-txt); }
+</style>
+<div id="view-internacoes-cirurgica" style="display:none">
+<main>
+  <section style="padding:0 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div>
+      <h1 class="view-title">Fila Cirúrgica</h1>
+      <div style="font-size:12px;color:var(--textMuted);margin-bottom:16px">Pacientes aguardando cirurgia (internados ou já desospitalizados). Mais prioritários e mais antigos em cima. Linha destacada passou do prazo da prioridade.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="filaAbrirEditar(null)" title="Adicionar registro manual" style="font-size:12px;white-space:nowrap;background:rgba(99,102,241,0.18);color:rgba(99,102,241,1);border:1px solid rgba(99,102,241,0.40);"><i aria-hidden="true" data-lucide="plus"></i> Novo</button>
+      <button class="btn btn-ghost" onclick="filaExportarXLS()" title="Baixar fila cirúrgica em Excel" style="font-size:12px;white-space:nowrap;"><i aria-hidden="true" data-lucide="file-down"></i> Excel</button>
+      <button class="btn btn-ghost" onclick="filaRegrasAbrir()" title="Ajustar os prazos da fila" style="font-size:12px;white-space:nowrap;"><i aria-hidden="true" data-lucide="settings"></i> Regras</button>
+    </div>
+  </section>
+  <section style="padding:0 16px 8px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <div id="fila-toggle" class="fila-toggle">
+      <span class="fc-tg on" data-v="lista" onclick="filaToggleVista('lista')">▤ Lista</span>
+      <span class="fc-tg off" data-v="quadro" onclick="filaToggleVista('quadro')">▦ Quadro</span>
+    </div>
+    <select id="fila-f-esp" onchange="filaRender()" class="fila-filtro"><option value="">Toda especialidade</option><option value="ORTOPEDIA">Ortopedia</option><option value="CIRURGIA_GERAL">Cirurgia geral</option></select>
+    <select id="fila-f-status" onchange="filaRender()" class="fila-filtro"><option value="">Todo status</option><option value="EM_PREPARO">Em preparação</option><option value="APTO">Apto, na fila</option><option value="AGENDADO">Agendado</option><option value="OPERADO">Operado</option><option value="SUSPENSO">Suspenso</option></select>
+    <select id="fila-f-prio" onchange="filaRender()" class="fila-filtro"><option value="">Toda prioridade</option><option value="ALTA">Alta</option><option value="MEDIA">Média</option><option value="BAIXA">Baixa</option></select>
+    <label style="font-size:12px;color:var(--textMuted);display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="fila-historico" onchange="filaRender()"> incluir operados e suspensos</label>
+  </section>
+  <section style="padding:0 16px 24px 16px">
+    <div class="std-card">
+      <div id="int-cir-stats" style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--textMuted);display:flex;gap:16px;flex-wrap:wrap"></div>
+      <div id="int-cir-wrap" style="overflow:auto;max-height:70vh"></div>
+    </div>
+  </section>
+  <div class="footer-mount"></div>
+</main>
+</div>
+
+<!-- [CC#22 30/mai] DRAWER da Fila Cirúrgica (criar/editar fila_cirurgica_hob) -->
+<div id="fila-drawer-overlay" class="ab-drawer-overlay" style="display:none" onclick="filaFecharDrawer(event)">
+  <div class="ab-drawer" onclick="event.stopPropagation()">
+    <div class="ab-drawer-head">
+      <h2 id="fila-drawer-title">Fila cirúrgica</h2>
+      <button class="btn btn-ghost" onclick="filaFecharDrawer()" aria-label="Fechar"><i aria-hidden="true" data-lucide="x"></i></button>
+    </div>
+    <div class="ab-drawer-body" id="fila-drawer-body"></div>
+    <div class="ab-drawer-foot">
+      <button class="btn btn-ghost" onclick="filaFecharDrawer()">Cancelar</button>
+      <button class="btn btn-primary" id="fila-drawer-save" onclick="filaSalvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- [CC#22 31/mai v2] MODAL Regras da Fila Cirúrgica (prazos editáveis + restaurar padrão) -->
+<div id="fila-reg-overlay" class="ab-drawer-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="ab-drawer" onclick="event.stopPropagation()" style="max-width:540px">
+    <div class="ab-drawer-head"><h2>Regras da fila cirúrgica</h2>
+      <button class="btn btn-ghost" onclick="document.getElementById('fila-reg-overlay').style.display='none'" aria-label="Fechar"><i aria-hidden="true" data-lucide="x"></i></button></div>
+    <div class="ab-drawer-body" id="fila-reg-body"></div>
+    <div class="ab-drawer-foot" style="justify-content:space-between">
+      <button class="btn btn-ghost" onclick="filaRegrasRestaurarPadrao()">↺ Restaurar padrão</button>
+      <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="document.getElementById('fila-reg-overlay').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="filaRegrasSubmeter()">Salvar regras</button></div>
+    </div>
+  </div>
 </div>
 
 <!-- [2026-05-28] VIEW INTERNAÇÕES — Histórico (saídas: alta médica / óbito / evasão) -->
@@ -8168,6 +8280,34 @@ function getColorClass(dias, t) {
   return 'f4';                                   // vermelho escuro
 }
 
+/* [CC#24 porte HMSA CC#19 2026-06-01] Classificador delta Prazo DRG — bed-card pinta por
+   HOJE − previsao_alta_drg. Sem DRG = f-no-drg (vermelho + badge SP). Campo no HOB: p.previsaoAltaDRG. */
+function _deltaDRGDias(p) {
+  if (!p || !p.previsaoAltaDRG) return null;
+  const prazo = new Date(p.previsaoAltaDRG);
+  if (isNaN(prazo)) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  prazo.setHours(0,0,0,0);
+  return Math.floor((hoje - prazo) / 86400000);
+}
+function getColorClassDRG(p) {
+  const d = _deltaDRGDias(p);
+  if (d === null) return 'f-no-drg';
+  if (d < 0)   return 'f-ok';
+  if (d === 0) return 'f-due';
+  if (d === 1) return 'f-over-1';
+  if (d <= 3)  return 'f-over-2';
+  if (d <= 5)  return 'f-over-3';
+  return 'f-over-4';
+}
+function formatDeltaDRG(p) {
+  const d = _deltaDRGDias(p);
+  if (d === null) return { txt: 'SP', tip: 'Sem previsão DRG' };
+  if (d < 0)   return { txt: `D${d}`,   tip: `Faltam ${-d}d ao prazo DRG` };
+  if (d === 0) return { txt: 'hoje',    tip: 'Vence hoje (prazo DRG)' };
+  return { txt: `+${d}d`, tip: `${d}d além do prazo DRG` };
+}
+
 /* ─── CHECKS DE STATUS ─── */
 function isSP(p) {
   if (!p.previsaoAlta) return true;
@@ -8874,11 +9014,13 @@ function renderHeatmap(pts) {
 
     const bedsHtml = ps.map(p => {
       const d   = calcDiasHoje(p);
-      const cc  = getColorClass(d, t);
-      const sp  = isSP(p);
+      const cc  = getColorClassDRG(p);
+      const drgInfo = formatDeltaDRG(p);
+      const sp  = !p.previsaoAltaDRG;
       const ann = getAnn(p);
       // [Fase 55.5] PNA removido — carga cognitiva sem ganho operacional.
-      const isLP= d > t;
+      // [CC#24] SP do card = sem DRG (paridade HMSA); cor e nº grande vêm do delta ao prazo DRG.
+      const isLP= (cc === 'f-over-4');
       // [2026-05-19 CC#11] Fix openModal silencioso pra pacientes com leito_override (clone via _aplicarLeitoOverridesBatch). Lookup por idEpisodio resolve.
       const idx = p.idEpisodio
         ? allPatients.findIndex(x => x.idEpisodio === p.idEpisodio)
@@ -8908,8 +9050,8 @@ function renderHeatmap(pts) {
         <div class="bed-num">${p.numLeito}</div>
         <div class="bed-esp">${p.especialidade || '—'}${p.especialidade_override === 'TRUE' || p.especialidade_override === true ? ' <span class="esp-override-badge" title="Especialidade revisada pela equipe">✓</span>' : ''}</div>
         <div class="bed-days-wrap">
-          <div class="bed-days">${d}</div>
-          <div class="bed-days-label">dias</div>
+          <div class="bed-days" title="${escapeHtml(drgInfo.tip)}">${drgInfo.txt}</div>
+          <div class="bed-days-label">vs DRG</div>
           ${(() => {
             // [Maestro 05/mai] Prazo Kanban visível no card. Formata DD/MM se ISO; mostra livre senão.
             // [HOB 2026-05-08] Indicador discreto de Plano de Ação: bullet azul "•" como prefixo do prazo
@@ -16248,6 +16390,573 @@ async function _intHandlerCompletarDados(internacaoId) {
   } catch (err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
+/* ===== FILA CIRÚRGICA HOB (porte de HMSA, CC#24 2026-06-01) ===== */
+/* Task 4 — Normalizador de status cru → canônico.
+   Ordem importa: terminais (OPERADO/SUSPENSO) antes dos genéricos.
+   a_validar: refinar regex com os 11 valores crus reais do HMSA. */
+function filaNormalizarStatus(cru) {
+  const s = (cru || '').toString().toLowerCase().trim();
+  if (/operad|realizad|pós-?op|pos-?op/.test(s)) return 'OPERADO';
+  if (/cancelad|óbito|obito|transferid|recus|não compareceu|nao compareceu/.test(s)) return 'SUSPENSO';
+  if (/agendad|marcad/.test(s)) return 'AGENDADO';
+  if (/apto|liberad|em fila/.test(s)) return 'APTO';
+  if (/aguardand|pré-?op|pre-?op|exame|pendente|preparo/.test(s)) return 'EM_PREPARO';
+  return 'EM_PREPARO'; // fallback conservador: não-reconhecido entra como em preparo
+}
+
+/* Smoke auto-verificável (rodar no console: _filaTestNormalizar()). */
+function _filaTestNormalizar() {
+  const casos = [
+    ['aguardando exames', 'EM_PREPARO'],
+    ['pré-op pendente', 'EM_PREPARO'],
+    ['liberado', 'APTO'],
+    ['apto', 'APTO'],
+    ['em fila', 'APTO'],
+    ['agendado 12/06', 'AGENDADO'],
+    ['operado', 'OPERADO'],
+    ['pós-op', 'OPERADO'],
+    ['cancelado', 'SUSPENSO'],
+    ['óbito', 'SUSPENSO'],
+    ['xpto desconhecido', 'EM_PREPARO'], // fallback
+  ];
+  const falhas = casos.filter(([cru, esp]) => filaNormalizarStatus(cru) !== esp);
+  console.log(falhas.length === 0 ? 'OK normalizar' : 'FALHAS:', falhas);
+  return falhas.length === 0;
+}
+
+/* Task 5/8 — Fila Cirúrgica table-backed (substitui a sub-aba de retorno-cirúrgico;
+   decisão Maestro 30/mai "nova substitui existente"). Read-path: carga REST + lista + indicadores.
+   I/O via fetch ${SB_URL}/rest/v1/fila_cirurgica_hob + SB_H. LGPD: banco completo, display abreviado. */
+let FILA_ROWS = [];
+const FILA_PRIO_PESO = { ALTA: 3, MEDIA: 2, BAIXA: 1 };
+const FILA_TERMINAIS = ['OPERADO','SUSPENSO'];
+const FILA_LABELS = { EM_PREPARO:'Em preparação', APTO:'Apto, na fila', AGENDADO:'Agendado', OPERADO:'Operado', SUSPENSO:'Suspenso' };
+const FILA_PRIO_LABEL = { ALTA:'Alta', MEDIA:'Média', BAIXA:'Baixa' };
+/* [CC#22 31/mai v2] Motor de regras — prazos por prioridade vêm de config_fila_cirurgica_hob.
+   Default seed com lastro (ALTA 48h: metanálise N=191k/NICE; MÉDIA/BAIXA: SWALIS A2/A3, a_validar HMSA). */
+const FILA_REGRAS_DEFAULT = { alvo_alta_dias:2, alvo_media_dias:21, alvo_baixa_dias:30, near_pct:30 };
+let FILA_REGRAS = { ...FILA_REGRAS_DEFAULT };
+
+async function filaRegrasGet() {
+  try {
+    const resp = await fetch(`${SB_URL}/rest/v1/config_fila_cirurgica_hob?id=eq.HOB&select=*`, { headers: SB_H });
+    if (resp.ok) {
+      const d = await resp.json();
+      if (d && d[0]) FILA_REGRAS = {
+        alvo_alta_dias:+d[0].alvo_alta_dias, alvo_media_dias:+d[0].alvo_media_dias,
+        alvo_baixa_dias:+d[0].alvo_baixa_dias, near_pct:+d[0].near_pct
+      };
+    }
+  } catch (e) { console.warn('regras: fallback default', e); FILA_REGRAS = { ...FILA_REGRAS_DEFAULT }; }
+  return FILA_REGRAS;
+}
+
+function filaAlvoDias(prioridade) {
+  return prioridade === 'ALTA' ? FILA_REGRAS.alvo_alta_dias
+       : prioridade === 'MEDIA' ? FILA_REGRAS.alvo_media_dias
+       : FILA_REGRAS.alvo_baixa_dias;
+}
+
+async function filaRegrasSalvar(regras) {
+  const userName = ((typeof getUserName === 'function' && getUserName()) || 'local');
+  const resp = await fetch(`${SB_URL}/rest/v1/config_fila_cirurgica_hob?id=eq.HOB`, {
+    method: 'PATCH', headers: { ...SB_H, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ ...regras, updated_by: userName })
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + (await resp.text()).slice(0,200));
+  FILA_REGRAS = { ...regras };
+}
+
+/* [CC#22 31/mai v2] Janela de Regras — edita prazos + restaurar padrão. */
+function _filaRegItem(id, label, valor, tag, why) {
+  const tagCls = tag==='forte' ? 'tag-forte' : 'tag-validar';
+  const tagTxt = tag==='forte' ? 'respaldo forte' : 'validar c/ HMSA';
+  return `<div class="ab-form-row" style="display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--border);padding:10px 0">
+    <input type="number" min="0" id="${id}" value="${valor}" style="width:64px;text-align:center">
+    <div><div style="font-weight:700">${label}<span class="fila-rtag ${tagCls}">${tagTxt}</span></div>
+    <div style="font-size:11px;color:var(--textMuted);margin-top:2px">${why}</div></div></div>`;
+}
+function filaRegrasRenderForm() {
+  return _filaRegItem('fila-reg-alta','Alta — dias', FILA_REGRAS.alvo_alta_dias, 'forte',
+      'Trauma/fratura. Operar fratura de quadril em até 48h reduz mortalidade (metanálise com 191 mil pacientes; diretriz NICE).')
+    + _filaRegItem('fila-reg-media','Média — dias', FILA_REGRAS.alvo_media_dias, 'validar',
+      'Referência internacional (SWALIS A2). O SUS não tem padrão nacional — ajuste à realidade do HMSA.')
+    + _filaRegItem('fila-reg-baixa','Baixa — dias', FILA_REGRAS.alvo_baixa_dias, 'validar',
+      'Referência internacional (SWALIS A3). Meta interna, ajuste à fila real do hospital.')
+    + _filaRegItem('fila-reg-near','Avisar "quase no limite" quando faltar — %', FILA_REGRAS.near_pct, 'validar',
+      'Ex.: com 30%, o paciente fica âmbar quando passou de 70% do prazo.');
+}
+function filaRegrasAbrir() {
+  if (typeof isEditAuthed === 'function' && !isEditAuthed()) { if (typeof requireEditAuth === 'function') { requireEditAuth(filaRegrasAbrir); return; } }
+  document.getElementById('fila-reg-body').innerHTML = filaRegrasRenderForm();
+  document.getElementById('fila-reg-overlay').style.display = 'flex';
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+function filaRegrasLerForm() {
+  const n = id => Math.max(0, +(document.getElementById(id)?.value || 0));
+  return { alvo_alta_dias:n('fila-reg-alta'), alvo_media_dias:n('fila-reg-media'), alvo_baixa_dias:n('fila-reg-baixa'), near_pct:n('fila-reg-near') };
+}
+function filaRegrasRestaurarPadrao() {
+  document.getElementById('fila-reg-alta').value = FILA_REGRAS_DEFAULT.alvo_alta_dias;
+  document.getElementById('fila-reg-media').value = FILA_REGRAS_DEFAULT.alvo_media_dias;
+  document.getElementById('fila-reg-baixa').value = FILA_REGRAS_DEFAULT.alvo_baixa_dias;
+  document.getElementById('fila-reg-near').value = FILA_REGRAS_DEFAULT.near_pct;
+}
+async function filaRegrasSubmeter() {
+  const r = filaRegrasLerForm();
+  if (r.alvo_alta_dias<=0 || r.alvo_media_dias<=0 || r.alvo_baixa_dias<=0) { alert('Os prazos precisam ser maiores que zero.'); return; }
+  try { await filaRegrasSalvar(r); } catch (e) { alert('Erro ao salvar regras: ' + e.message); return; }
+  document.getElementById('fila-reg-overlay').style.display = 'none';
+  filaRender();
+}
+
+/* [CC#22 31/mai v2] Relógio de urgência: fratura quando houver (ortopedia), senão entrada. */
+function filaClockDias(row) {
+  const base = (row.especialidade === 'ORTOPEDIA' && row.dt_fratura)
+    ? row.dt_fratura
+    : (row.dt_admissao || row.dt_desospitalizacao || (row.created_at ? String(row.created_at).slice(0,10) : null));
+  if (!base) return null;
+  const d = new Date(String(base).slice(0,10)); if (isNaN(d)) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  return Math.floor((hoje - d) / 86400000);
+}
+
+function filaClockOrigem(row) {
+  return (row.especialidade === 'ORTOPEDIA' && row.dt_fratura) ? 'fratura' : 'entrada';
+}
+
+function filaUrgencia(row) {
+  const dias = filaClockDias(row);
+  const alvo = filaAlvoDias(row.prioridade);
+  if (dias == null || !alvo) return { banda:'ok', pct:0, dias, alvo, semData: dias == null };
+  const pct = dias / alvo;
+  let banda = 'ok';
+  if (pct >= 1) banda = 'over';
+  else if (pct >= (1 - (FILA_REGRAS.near_pct || 30) / 100)) banda = 'near';
+  return { banda, pct, dias, alvo, semData:false };
+}
+
+function filaDiasNaFila(row) {
+  const base = row.dt_admissao || row.dt_desospitalizacao || (row.created_at ? String(row.created_at).slice(0,10) : null);
+  if (!base) return null;
+  const d = new Date(String(base).slice(0,10)); if (isNaN(d)) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  return Math.floor((hoje - d) / 86400000);
+}
+
+function filaOrdenarAtivos(rows, incluirHistorico=false) {
+  let r = rows.slice();
+  if (!incluirHistorico) r = r.filter(x => !FILA_TERMINAIS.includes(x.status_fluxo));
+  return r.sort((a,b) => {
+    const p = (FILA_PRIO_PESO[b.prioridade]||0) - (FILA_PRIO_PESO[a.prioridade]||0);
+    if (p !== 0) return p;
+    return (filaDiasNaFila(b)||0) - (filaDiasNaFila(a)||0); // mais dias primeiro
+  });
+}
+
+function filaAplicarFiltros(rows, f) {
+  return rows.filter(r =>
+    (!f.especialidade || r.especialidade === f.especialidade) &&
+    (!f.status || r.status_fluxo === f.status) &&
+    (!f.prioridade || r.prioridade === f.prioridade)
+  );
+}
+
+function filaLerFiltrosUI() {
+  const g = id => document.getElementById(id);
+  return { especialidade: g('fila-f-esp')?.value || '', status: g('fila-f-status')?.value || '', prioridade: g('fila-f-prio')?.value || '' };
+}
+
+const _filaFmtDate = (iso) => { if (!iso) return '—'; const s = String(iso).slice(0,10).split('-'); return s.length===3 ? `${s[2]}/${s[1]}/${s[0]}` : String(iso); };
+
+const FILA_BANDA_META = {
+  over: { titulo:'⚠ Passou do prazo', cls:'grp-over' },
+  near: { titulo:'● Quase no limite', cls:'grp-near' },
+  ok:   { titulo:'✓ Dentro do prazo', cls:'grp-ok' }
+};
+
+function filaAgruparPorBanda(rows) {
+  const g = { over:[], near:[], ok:[] };
+  for (const r of rows) g[filaUrgencia(r).banda].push(r);
+  const peso = { ALTA:3, MEDIA:2, BAIXA:1 };
+  for (const k of ['over','near','ok']) g[k].sort((a,b)=>{
+    const p=(peso[b.prioridade]||0)-(peso[a.prioridade]||0); if(p) return p;
+    return (filaClockDias(b)||0)-(filaClockDias(a)||0);
+  });
+  return g;
+}
+
+function _filaCelulaEspera(r) {
+  const u = filaUrgencia(r);
+  const origem = filaClockOrigem(r);
+  const alvoTxt = r.prioridade === 'ALTA' ? '48h' : (u.alvo + 'd');
+  const validar = r.prioridade !== 'ALTA';
+  const cls = u.banda === 'over' ? 'over-t' : u.banda === 'near' ? '' : 'ok-t';
+  const bar = u.banda === 'over' ? 'red' : u.banda === 'near' ? 'amb' : 'grn';
+  const larg = Math.min(100, Math.round((u.pct||0)*100));
+  const diasTxt = u.semData
+    ? '<span class="fila-semdata">sem data de fratura</span>'
+    : `<span class="${cls}">${u.dias} ${u.dias===1?'dia':'dias'}${origem==='fratura'?' (desde a fratura)':' na fila'}</span>`;
+  const alvoEl = validar
+    ? `prazo <span class="fila-info" title="Prazo definido pelo HMSA. Ainda sem padrão nacional do SUS — dá pra ajustar em Regras.">${alvoTxt} ⓘ</span>`
+    : `prazo ${alvoTxt}`;
+  return `${diasTxt} · ${alvoEl}<div class="fila-bar ${bar}"><span style="width:${larg}%"></span></div>`;
+}
+
+function filaRenderLista(rows, incluirHistorico=false) {
+  const wrap = document.getElementById('int-cir-wrap'); if (!wrap) return;
+  let base = rows.slice();
+  if (!incluirHistorico) base = base.filter(r => !FILA_TERMINAIS.includes(r.status_fluxo));
+  if (!base.length) { wrap.innerHTML = '<div class="empty-msg" style="text-align:center;color:var(--textMuted);padding:32px;font-style:italic">Fila cirúrgica vazia.</div>'; return; }
+  const g = filaAgruparPorBanda(base);
+  const linha = (r) => `<tr class="${filaUrgencia(r).banda==='over'?'fila-rowover':''}">
+    <td title="Nome abreviado por LGPD">${abreviarNomePaciente(r.nome) || '—'}</td>
+    <td>${r.desc_tipo || '—'}<div class="fila-sub">${r.especialidade==='ORTOPEDIA'?'Ortopedia':'Cirurgia geral'}</div></td>
+    <td><span class="fila-chip pri-${r.prioridade.toLowerCase()}">${FILA_PRIO_LABEL[r.prioridade]||r.prioridade}</span></td>
+    <td><span class="fila-chip st-${r.status_fluxo.toLowerCase()}">${FILA_LABELS[r.status_fluxo]||r.status_fluxo}</span></td>
+    <td>${_filaCelulaEspera(r)}</td>
+    <td>${_filaFmtDate(r.dt_prevista_cirurgia)}</td>
+    <td style="text-align:right;white-space:nowrap"><button class="cad-btn-icon" onclick="filaAbrirEditar('${r.id}')" title="Editar registro" aria-label="Editar"><i data-lucide="pencil"></i></button></td>
+  </tr>`;
+  const secao = (k) => g[k].length ? `<tr class="fila-grp ${FILA_BANDA_META[k].cls}"><td colspan="7">${FILA_BANDA_META[k].titulo} · ${g[k].length}</td></tr>` + g[k].map(linha).join('') : '';
+  wrap.innerHTML = `<table class="fila-tbl"><thead><tr>
+    <th>Paciente</th><th>Procedimento</th><th>Prioridade</th><th>Status</th><th>Espera / prazo</th><th>Cirurgia</th><th></th>
+  </tr></thead><tbody>${secao('over')}${secao('near')}${secao('ok')}</tbody></table>`;
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+
+function _filaMedia(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+function filaCalcIndicadores(rows) {
+  const totalPorStatus = {};
+  for (const r of rows) totalPorStatus[r.status_fluxo] = (totalPorStatus[r.status_fluxo]||0)+1;
+  const leadDias = rows.filter(r => r.dt_apto_cirurgia && r.dt_realizacao_cirurgia)
+    .map(r => Math.floor((new Date(r.dt_realizacao_cirurgia) - new Date(r.dt_apto_cirurgia))/86400000));
+  const leadAptoCirurgia = leadDias.length >= 3 ? _filaMedia(leadDias) : null; // guard n>=3
+  const prepDias = rows.filter(r => (r.dt_admissao||r.dt_desospitalizacao) && r.dt_apto_cirurgia)
+    .map(r => Math.floor((new Date(r.dt_apto_cirurgia) - new Date(r.dt_admissao||r.dt_desospitalizacao))/86400000));
+  const tempoPreparo = prepDias.length >= 3 ? _filaMedia(prepDias) : null;
+  const ativos = rows.filter(r => !FILA_TERMINAIS.includes(r.status_fluxo));
+  const noPrazo = ativos.filter(r => filaUrgencia(r).banda !== 'over').length;
+  const pctNoPrazo = ativos.length >= 3 ? (noPrazo/ativos.length)*100 : null;
+  const suspensos = rows.filter(r => r.status_fluxo === 'SUSPENSO').length;
+  const terminados = suspensos + (totalPorStatus.OPERADO||0);
+  const pctCancel = terminados >= 3 ? (suspensos/terminados)*100 : null; // guard n>=3
+  return { totalPorStatus, leadAptoCirurgia, tempoPreparo, pctNoPrazo, pctCancelamento: pctCancel };
+}
+
+function filaIndicadores(rows) {
+  const el = document.getElementById('int-cir-stats'); if (!el) return;
+  const i = filaCalcIndicadores(rows); const t = i.totalPorStatus;
+  const fmt = (v, suf) => v==null ? 'n&lt;3' : v.toFixed(suf==='%'?0:1)+suf;
+  el.innerHTML =
+    `<span>Tempo médio se preparando: <strong>${fmt(i.tempoPreparo,'d')}</strong></span>` +
+    `<span>Do apto até operar: <strong>${fmt(i.leadAptoCirurgia,'d')}</strong></span>` +
+    `<span>% no prazo: <strong>${fmt(i.pctNoPrazo,'%')}</strong></span>` +
+    `<span>% cancelados: <strong>${fmt(i.pctCancelamento,'%')}</strong></span>` +
+    `<span>Preparando <strong>${t.EM_PREPARO||0}</strong> · Apto <strong>${t.APTO||0}</strong> · Agendado <strong>${t.AGENDADO||0}</strong></span>`;
+}
+
+async function filaCarregar() {
+  const wrap = document.getElementById('int-cir-wrap');
+  await filaRegrasGet();
+  try {
+    const resp = await fetch(`${SB_URL}/rest/v1/fila_cirurgica_hob?select=*`, { headers: SB_H });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    FILA_ROWS = await resp.json();
+  } catch (e) {
+    console.error('fila load', e);
+    if (wrap) wrap.innerHTML = '<div class="empty-msg" style="color:#ef4444;padding:24px;text-align:center">Erro ao carregar a fila cirúrgica.</div>';
+    return;
+  }
+  filaRender();
+  setBadge('sub-int-cirurgica', FILA_ROWS.filter(r => !FILA_TERMINAIS.includes(r.status_fluxo)).length);
+}
+
+/* [CC#22 31/mai v2] Vista Lista/Quadro (preferência por-pessoa em localStorage). */
+let FILA_VISTA = (typeof localStorage!=='undefined' && localStorage.getItem('fila_vista')) || 'lista';
+
+function filaToggleVista(v) {
+  FILA_VISTA = v;
+  try { localStorage.setItem('fila_vista', v); } catch(e){}
+  document.querySelectorAll('#fila-toggle .fc-tg').forEach(el => el.className = 'fc-tg ' + (el.dataset.v===v ? 'on' : 'off'));
+  filaRender();
+}
+
+function filaRender() {
+  document.querySelectorAll('#fila-toggle .fc-tg').forEach(el => el.className = 'fc-tg ' + (el.dataset.v===FILA_VISTA ? 'on' : 'off'));
+  const filtrados = filaAplicarFiltros(FILA_ROWS, filaLerFiltrosUI());
+  const incluirHist = document.getElementById('fila-historico')?.checked || false;
+  if (FILA_VISTA === 'quadro') filaRenderQuadro(filtrados);
+  else filaRenderLista(filtrados, incluirHist);
+  filaIndicadores(FILA_ROWS);
+}
+
+function filaRenderQuadro(rows) {
+  const wrap = document.getElementById('int-cir-wrap'); if (!wrap) return;
+  const cols = [['EM_PREPARO','Em preparação'],['APTO','Apto, na fila'],['AGENDADO','Agendado']];
+  const peso = { ALTA:3, MEDIA:2, BAIXA:1 };
+  const card = (r) => {
+    const u = filaUrgencia(r);
+    return `<div class="fila-mini ml-${r.prioridade.toLowerCase()}">
+      <div style="font-weight:700;color:var(--textPrimary)">${abreviarNomePaciente(r.nome)||'—'} ${u.banda==='over'?'⚠':''}</div>
+      <div class="fila-sub">${r.desc_tipo||'—'} · ${u.semData?'sem data':(u.dias+'d')}</div></div>`;
+  };
+  wrap.innerHTML = `<div style="display:flex;gap:10px">${cols.map(([st,lbl])=>{
+    const lst = rows.filter(r=>r.status_fluxo===st).sort((a,b)=>(peso[b.prioridade]||0)-(peso[a.prioridade]||0));
+    return `<div class="fila-col"><div class="fila-colh"><span>${lbl}</span><span>${lst.length}</span></div>${lst.map(card).join('')}</div>`;
+  }).join('')}</div>`;
+}
+
+function filaExportarXLS() {
+  const linhas = filaOrdenarAtivos(filaAplicarFiltros(FILA_ROWS, filaLerFiltrosUI()), document.getElementById('fila-historico')?.checked || false)
+    .map(r => ({
+      Paciente: abreviarNomePaciente(r.nome) || '',
+      Especialidade: r.especialidade === 'ORTOPEDIA' ? 'Ortopedia' : 'Cirurgia geral',
+      Prioridade: FILA_PRIO_LABEL[r.prioridade]||r.prioridade,
+      Status: FILA_LABELS[r.status_fluxo]||r.status_fluxo,
+      'Dias na fila': filaDiasNaFila(r) ?? '',
+      'Cirurgia prevista': r.dt_prevista_cirurgia || ''
+    }));
+  const data = new Date().toISOString().slice(0,10);
+  if (typeof _downloadXLS === 'function') _downloadXLS(linhas, `fila-cirurgica-${HOSPITAL_ID}-${data}.xls`, 'Fila Cirúrgica');
+}
+
+/* Task 6/7 — write-path: drawer criar/editar + poka-yoke coerência + guard duplicata + save REST + entrada da internação. */
+let FILA_DRAWER = { mode: 'novo', id: null };
+const FILA_MOTIVO_LABEL = { CANCELADO:'Cancelado', OBITO:'Óbito', TRANSFERENCIA:'Transferência', RECUSA:'Recusa', NAO_COMPARECIMENTO:'Não compareceu' };
+function _filaOpt(val, label, cur){ return `<option value="${val}" ${String(cur)===val?'selected':''}>${label}</option>`; }
+
+function filaRenderForm(r) {
+  r = r || {};
+  const v = (k) => r[k] != null ? String(r[k]).replace(/"/g,'&quot;').replace(/</g,'&lt;') : '';
+  const esp = v('especialidade'), st = v('status_fluxo'), prio = v('prioridade'), orig = v('origem_lista'), mot = v('motivo_suspensao');
+  return `
+    <input type="hidden" id="fila-form-internacao-id" value="${v('internacao_id')}">
+    <div class="ab-form-row">
+      <label class="required">Nome do paciente</label>
+      <input type="text" id="fila-form-nome" value="${v('nome')}" required>
+    </div>
+    <div class="ab-form-row-pair">
+      <div class="ab-form-row">
+        <label class="required">Especialidade</label>
+        <select id="fila-form-esp" required onchange="filaToggleCondicionais()">
+          <option value="">— escolha —</option>
+          ${_filaOpt('ORTOPEDIA','Ortopedia',esp)}
+          ${_filaOpt('CIRURGIA_GERAL','Cirurgia geral',esp)}
+        </select>
+      </div>
+      <div class="ab-form-row">
+        <label>Origem</label>
+        <select id="fila-form-origem">
+          <option value="">—</option>
+          ${_filaOpt('INTERNADO','Internado',orig)}
+          ${_filaOpt('PROG_DESOSP','Programado (desospitalizado)',orig)}
+        </select>
+      </div>
+    </div>
+    <div class="ab-form-row">
+      <label class="required">Tipo de cirurgia / procedimento</label>
+      <input type="text" id="fila-form-desc" value="${v('desc_tipo')}" placeholder="Ex.: fratura de fêmur, colecistectomia" required>
+    </div>
+    <div id="fila-grupo-ortopedia" style="display:none">
+      <div class="ab-form-row">
+        <label>Data da fratura</label>
+        <input type="date" id="fila-form-dt-fratura" value="${v('dt_fratura')}">
+      </div>
+    </div>
+    <div class="ab-form-row-pair">
+      <div class="ab-form-row">
+        <label class="required">Status</label>
+        <select id="fila-form-status" required onchange="filaToggleCondicionais()">
+          <option value="">— escolha —</option>
+          ${_filaOpt('EM_PREPARO','Em preparação',st)}
+          ${_filaOpt('APTO','Apto, na fila',st)}
+          ${_filaOpt('AGENDADO','Agendado',st)}
+          ${_filaOpt('OPERADO','Operado',st)}
+          ${_filaOpt('SUSPENSO','Suspenso',st)}
+        </select>
+      </div>
+      <div class="ab-form-row">
+        <label class="required">Prioridade</label>
+        <select id="fila-form-prio" required>
+          <option value="">— escolha —</option>
+          ${_filaOpt('ALTA','Alta',prio)}
+          ${_filaOpt('MEDIA','Média',prio)}
+          ${_filaOpt('BAIXA','Baixa',prio)}
+        </select>
+      </div>
+    </div>
+    <div id="fila-grupo-suspensao" style="display:none">
+      <div class="ab-form-row">
+        <label>Motivo da suspensão</label>
+        <select id="fila-form-motivo">
+          <option value="">— escolha —</option>
+          ${_filaOpt('CANCELADO','Cancelado',mot)}
+          ${_filaOpt('OBITO','Óbito',mot)}
+          ${_filaOpt('TRANSFERENCIA','Transferência',mot)}
+          ${_filaOpt('RECUSA','Recusa',mot)}
+          ${_filaOpt('NAO_COMPARECIMENTO','Não compareceu',mot)}
+        </select>
+      </div>
+    </div>
+    <div class="ab-form-row" style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)"><label style="font-weight:600">Datas-marco</label></div>
+    <div class="ab-form-row-pair">
+      <div class="ab-form-row"><label>Admissão</label><input type="date" id="fila-form-dt-adm" value="${v('dt_admissao')}"></div>
+      <div class="ab-form-row"><label>Desospitalização</label><input type="date" id="fila-form-dt-desosp" value="${v('dt_desospitalizacao')}"></div>
+    </div>
+    <div class="ab-form-row-pair">
+      <div class="ab-form-row"><label>Apto para cirurgia</label><input type="date" id="fila-form-dt-apto" value="${v('dt_apto_cirurgia')}"></div>
+      <div class="ab-form-row"><label>Cirurgia prevista</label><input type="date" id="fila-form-dt-prev" value="${v('dt_prevista_cirurgia')}"></div>
+    </div>
+    <div class="ab-form-row">
+      <label>Cirurgia realizada</label>
+      <input type="date" id="fila-form-dt-real" value="${v('dt_realizacao_cirurgia')}">
+    </div>
+    <div class="ab-form-row">
+      <label>Observação</label>
+      <textarea id="fila-form-obs" rows="2">${v('observacao')}</textarea>
+    </div>
+  `;
+}
+
+function filaToggleCondicionais() {
+  const esp = document.getElementById('fila-form-esp')?.value;
+  const st = document.getElementById('fila-form-status')?.value;
+  const go = document.getElementById('fila-grupo-ortopedia'); if (go) go.style.display = (esp === 'ORTOPEDIA') ? '' : 'none';
+  const gs = document.getElementById('fila-grupo-suspensao'); if (gs) gs.style.display = (st === 'SUSPENSO') ? '' : 'none';
+}
+
+function filaLerForm() {
+  const g = id => document.getElementById(id);
+  const txt = id => { const e = g(id); return e ? (e.value || '').trim() : ''; };
+  const dt = id => txt(id) || null;
+  return {
+    internacao_id: txt('fila-form-internacao-id') || null,
+    nome: txt('fila-form-nome'),
+    especialidade: g('fila-form-esp')?.value || '',
+    origem_lista: g('fila-form-origem')?.value || null,
+    desc_tipo: txt('fila-form-desc'),
+    dt_fratura: dt('fila-form-dt-fratura'),
+    status_fluxo: g('fila-form-status')?.value || '',
+    prioridade: g('fila-form-prio')?.value || '',
+    motivo_suspensao: g('fila-form-motivo')?.value || null,
+    dt_admissao: dt('fila-form-dt-adm'),
+    dt_desospitalizacao: dt('fila-form-dt-desosp'),
+    dt_apto_cirurgia: dt('fila-form-dt-apto'),
+    dt_prevista_cirurgia: dt('fila-form-dt-prev'),
+    dt_realizacao_cirurgia: dt('fila-form-dt-real'),
+    observacao: txt('fila-form-obs') || null
+  };
+}
+
+/* Poka-yoke não bloqueante: avisos de coerência de status×datas. */
+function filaChecarCoerencia(r) {
+  const a = [];
+  if (r.status_fluxo === 'AGENDADO' && !r.dt_prevista_cirurgia) a.push('• Status Agendado mas sem data prevista de cirurgia.');
+  if (r.status_fluxo === 'OPERADO' && !r.dt_realizacao_cirurgia) a.push('• Status Operado mas sem data de realização.');
+  if (r.status_fluxo === 'APTO' && !r.dt_apto_cirurgia) a.push('• Status Apto mas sem data de aptidão.');
+  if (r.dt_apto_cirurgia && r.dt_prevista_cirurgia && r.dt_apto_cirurgia > r.dt_prevista_cirurgia) a.push('• Data de aptidão depois da prevista.');
+  if (r.dt_prevista_cirurgia && r.dt_realizacao_cirurgia && r.dt_prevista_cirurgia > r.dt_realizacao_cirurgia) a.push('• Data prevista depois da realização.');
+  return a;
+}
+
+async function filaChecarDuplicata(r, idExistente) {
+  try {
+    const url = `${SB_URL}/rest/v1/fila_cirurgica_hob?nome=eq.${encodeURIComponent(r.nome)}&especialidade=eq.${r.especialidade}&status_fluxo=not.in.(OPERADO,SUSPENSO)&select=id`;
+    const resp = await fetch(url, { headers: SB_H });
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    return (data || []).some(x => x.id !== idExistente);
+  } catch (e) { return false; }
+}
+
+function filaAbrirEditar(id) {
+  if (typeof isEditAuthed === 'function' && !isEditAuthed()) {
+    if (typeof requireEditAuth === 'function') { requireEditAuth(() => filaAbrirEditar(id)); return; }
+  }
+  let r = null, mode = 'novo';
+  if (id && typeof id === 'string') { r = (FILA_ROWS || []).find(x => x.id === id) || null; mode = r ? 'editar' : 'novo'; }
+  else if (id && typeof id === 'object') { r = id; mode = 'novo'; } // prefill vindo da internação (Task 7)
+  FILA_DRAWER = { mode, id: (mode === 'editar') ? id : null };
+  document.getElementById('fila-drawer-title').textContent = (mode === 'editar') ? 'Editar registro da fila' : 'Novo registro na fila';
+  document.getElementById('fila-drawer-body').innerHTML = filaRenderForm(r);
+  document.getElementById('fila-drawer-overlay').style.display = 'flex';
+  filaToggleCondicionais();
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+
+function filaFecharDrawer(evt) {
+  if (evt && evt.target && evt.target.id !== 'fila-drawer-overlay') return;
+  document.getElementById('fila-drawer-overlay').style.display = 'none';
+}
+
+/* [CC#22 31/mai v2] dt_fratura é o relógio em ortopedia: requerida (app-side) + sem data futura. */
+function filaValidarFratura(r) {
+  if (r.especialidade !== 'ORTOPEDIA' || FILA_TERMINAIS.includes(r.status_fluxo)) return { bloqueia:false };
+  if (!r.dt_fratura) return { bloqueia:true, msg:'Ortopedia exige a data da fratura (ela define o relógio de urgência).' };
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const d = new Date(String(r.dt_fratura).slice(0,10));
+  if (d > hoje) return { bloqueia:true, msg:'A data da fratura não pode ser futura.' };
+  return { bloqueia:false, aviso: (hoje - d)/86400000 > 365 ? 'Data da fratura há mais de 1 ano — confirme se está correta.' : null };
+}
+
+async function filaSalvar() {
+  if (typeof isEditAuthed === 'function' && !isEditAuthed()) {
+    if (typeof requireEditAuth === 'function') { requireEditAuth(() => filaSalvar()); return; }
+  }
+  const r = filaLerForm();
+  for (const [campo, label] of [['nome','nome'],['especialidade','especialidade'],['desc_tipo','tipo de cirurgia'],['status_fluxo','status'],['prioridade','prioridade']]) {
+    if (!r[campo]) { alert('Campo obrigatório: ' + label + '.'); return; }
+  }
+  if (r.status_fluxo === 'SUSPENSO' && !r.motivo_suspensao) { alert('Status Suspenso exige um motivo.'); return; }
+  const vf = filaValidarFratura(r);
+  if (vf.bloqueia) { alert(vf.msg); return; }
+  if (vf.aviso && !confirm(vf.aviso + '\n\nSalvar mesmo assim?')) return;
+  const avisos = filaChecarCoerencia(r);
+  if (avisos.length && !confirm('Avisos de coerência:\n\n' + avisos.join('\n') + '\n\nSalvar mesmo assim?')) return;
+  const idExistente = (FILA_DRAWER.mode === 'editar') ? FILA_DRAWER.id : null;
+  const dup = await filaChecarDuplicata(r, idExistente);
+  if (dup && !confirm('Já existe paciente ativo com mesmo nome e especialidade na fila. Salvar mesmo assim?')) return;
+  const btn = document.getElementById('fila-drawer-save');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  try {
+    let resp;
+    if (idExistente) {
+      resp = await fetch(`${SB_URL}/rest/v1/fila_cirurgica_hob?id=eq.${idExistente}`, {
+        method: 'PATCH', headers: { ...SB_H, 'Prefer': 'return=minimal' }, body: JSON.stringify(r)
+      });
+    } else {
+      resp = await fetch(`${SB_URL}/rest/v1/fila_cirurgica_hob`, {
+        method: 'POST', headers: { ...SB_H, 'Prefer': 'return=minimal' }, body: JSON.stringify(r)
+      });
+    }
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + (await resp.text()).slice(0,200));
+  } catch (e) {
+    alert('Erro ao salvar: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+    return;
+  }
+  filaFecharDrawer();
+  await filaCarregar();
+}
+
+/* Task 7 — entrada a partir de uma internação (pré-preenche e abre o drawer da fila). */
+function filaMapEspecialidade(esp) { return /ortop/i.test(esp || '') ? 'ORTOPEDIA' : 'CIRURGIA_GERAL'; }
+function filaAdicionarDeInternacao(internacao) {
+  if (!internacao) { alert('Internação não encontrada.'); return; }
+  if (typeof intFecharDrawer === 'function') intFecharDrawer();
+  filaAbrirEditar({
+    internacao_id: internacao.id,
+    nome: internacao.nome_paciente || internacao.nome || '',
+    especialidade: filaMapEspecialidade(internacao.especialidade),
+    origem_lista: 'INTERNADO',
+    status_fluxo: 'EM_PREPARO',
+    prioridade: 'MEDIA'
+  });
+}
+
+/* ===== fim FILA CIRÚRGICA HOB ===== */
+
 /** [Fase 15] Retorna ferramentas consolidadas: override → default. */
 function getFerramentasMerged() {
   const ov = (typeof KaizenStore !== 'undefined' && typeof KaizenStore.getFerramentas === 'function') ? KaizenStore.getFerramentas() : null;
@@ -17179,7 +17888,7 @@ function switchView(view, subView, subSubView) {
 
   // ─── Esconder TODAS as views ───
   // [Fase 50/51/52 + Maestro 05/mai] internacoes-fila adicionada (criada dinâmica, antes ficava órfã)
-  ['home','dashboard','action-plan','indicadores','kaizens','agenda-lean','ferramentas','preworks','simulador-nedocs','analise-visao-geral','analise-raio-x','analise-listas','analise-insercao','analise-historico','internacoes-lista','internacoes-fila','internacoes-historico','internacoes-conferencias','internacoes-dicionario','maturidade-nir','maturidade-nir-detalhe','maturidade-nir-historico','cockpit-nir','retaguarda-fila','retaguarda-cards','retaguarda-historico'].forEach(v => {
+  ['home','dashboard','action-plan','indicadores','kaizens','agenda-lean','ferramentas','preworks','simulador-nedocs','analise-visao-geral','analise-raio-x','analise-listas','analise-insercao','analise-historico','internacoes-lista','internacoes-cirurgica','internacoes-fila','internacoes-historico','internacoes-conferencias','internacoes-dicionario','maturidade-nir','maturidade-nir-detalhe','maturidade-nir-historico','cockpit-nir','retaguarda-fila','retaguarda-cards','retaguarda-historico'].forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = 'none';
   });
@@ -17253,6 +17962,9 @@ function switchView(view, subView, subSubView) {
     } else if (subView === 'historico') {
       document.getElementById('view-internacoes-historico').style.display = 'block';
       if (typeof renderInternacoes === 'function') renderInternacoes('historico');
+    } else if (subView === 'cirurgica') {
+      document.getElementById('view-internacoes-cirurgica').style.display = 'block';
+      if (typeof filaCarregar === 'function') filaCarregar();
     } else {
       document.getElementById('view-internacoes-lista').style.display = 'block';
       if (typeof renderInternacoes === 'function') renderInternacoes('lista');
@@ -17350,12 +18062,15 @@ function switchView(view, subView, subSubView) {
   const isHistInt = (isInternacoes && subView === 'historico');
   const isLista = (isInternacoes && (subView === 'lista' || !subView));
   const isFilaOrigem = (isInternacoes && subView === 'fila');
+  const isCirurgica = (isInternacoes && subView === 'cirurgica');
   const tabSubIntLista = document.getElementById('tab-sub-int-lista');
   const tabSubIntFila = document.getElementById('tab-sub-int-fila');
   const tabSubIntHist = document.getElementById('tab-sub-int-historico');
+  const tabSubIntCir = document.getElementById('tab-sub-int-cirurgica');
   if (tabSubIntLista) tabSubIntLista.classList.toggle('active', isLista);
   if (tabSubIntFila) tabSubIntFila.classList.toggle('active', isFilaOrigem);
   if (tabSubIntHist) tabSubIntHist.classList.toggle('active', isHistInt);
+  if (tabSubIntCir) tabSubIntCir.classList.toggle('active', isCirurgica);
 
   // [Maestro 05/mai] Marca step ativo. Step 02 = /internacoes/lista (lista de pacientes input pros cards).
   if (typeof _atualizarFluxoStepperActive === 'function') {
@@ -20372,54 +21087,20 @@ function intRenderLista() {
   intPopularFiltros();
   intPopularInputRow();
   const wrap = document.getElementById('int-lista-wrap');
-  const stats = document.getElementById('int-stats');
   if (!wrap) return;
-  const filtrados = intFiltrados();
-  const totalAtivos = INT.internacoes.filter(i => i.status_internacao === 'ativa').length;
-  if (stats) stats.textContent = `Mostrando ${filtrados.length} de ${totalAtivos} internado${totalAtivos === 1 ? '' : 's'} ativo${totalAtivos === 1 ? '' : 's'}.`;
-  if (!filtrados.length) {
-    wrap.innerHTML = '<div class="empty-msg">Nenhum internado ativo pra esse filtro.</div>';
-    return;
-  }
-  // [Fase 55.10] Tabela: Leito separado como 1ª col + Setor separado + filter row Excel-like.
+  if (!wrap.querySelector('table.int-table-lista')) intBuildListaShell(wrap);
+  intRenderTbody();
+}
+
+// [CC#24 porte HMSA 94e2838] Monta a shell (thead + filter row) UMA vez; filtrar re-renderiza
+// só o <tbody> → o input focado não é remontado, foco estável a cada tecla.
+function intBuildListaShell(wrap) {
   const f = INT.filtros;
-  const rows = filtrados.map(i => {
-    const isAtivo = i.status_internacao === 'ativa';
-    const stLabel = { ativa: 'Ativa', alta_medica: 'Saiu', transferida: 'Transf.', obito: 'Óbito', evasao: 'Evasão', cancelada: 'Cancel.' }[i.status_internacao] || i.status_internacao;
-    const stClass = isAtivo ? 'hist-status-ativo' : 'hist-status-finalizado';
-    const pendShort = (i.pendencia || '—').replace(/</g,'&lt;').replace(/\n/g,' · ').slice(0, 80);
-    const sevBadge = i.grau_severidade ? `<span class="int-sev int-sev-${i.grau_severidade}">${i.grau_severidade}</span>` : '—';
-    const prevDrg = i.previsao_alta_drg || '—';
-    const prevKb = i.previsao_kanban || '—';
-    const dataAlta = i.data_alta || '—';
-    return `
-      <tr class="${isAtivo ? 'hist-row-ativo' : ''}" data-id="${i.id}">
-        <td class="hist-cell-editable int-col-leito" onclick="intEditarCelula('${i.id}','leito',this)" title="Leito ${i.leito || '—'}">${i.leito || '—'}</td>
-        <td><span class="hist-status-badge ${stClass}">${stLabel}</span></td>
-        <td class="int-col-paciente" title="Nome abreviado por LGPD">${abreviarNomePaciente(i.nome_paciente) || '—'}</td>
-        <td>${i.atendimento || '—'}</td>
-        <td title="Setor: ${(i.setor || '—').replace(/"/g,'&quot;')}">${i.setor || '—'}</td>
-        <td class="hist-cell-editable" title="${(i.especialidade || '').replace(/"/g,'&quot;')}" onclick="intEditarCelula('${i.id}','especialidade',this,'select')">${i.especialidade || '—'}</td>
-        <td style="text-align:center">${sevBadge}</td>
-        <td title="Previsão DRG">${prevDrg}</td>
-        <td title="Previsão Kanban (revisada equipe)">${prevKb}</td>
-        <td class="hist-cell-editable int-col-pendencia" onclick="intEditarCelula('${i.id}','pendencia',this)" title="${(i.pendencia || '').replace(/"/g,'&quot;')}">${pendShort}</td>
-        <td title="Data alta médica">${dataAlta}</td>
-        <td style="text-align:right;white-space:nowrap">
-          ${isAtivo ? `<button class="cad-btn-icon cad-btn-success" onclick="_intHandlerDarAlta('${i.id}')" title="Registrar saída (alta médica / óbito / evasão)" aria-label="Registrar saída"><i data-lucide="log-out"></i></button>` : ''}
-          <button class="cad-btn-icon" onclick="intAbrirEditar('${i.id}')" title="Editar tudo"><i data-lucide="pencil"></i></button>
-          <button class="cad-btn-icon cad-btn-danger" onclick="_intExcluirInline('${i.id}','${(abreviarNomePaciente(i.nome_paciente) || '').replace(/'/g, '&#39;')}')" title="Excluir registro de internação (pede senha)" aria-label="Excluir"><i data-lucide="trash-2"></i></button>
-        </td>
-      </tr>`;
-  }).join('');
-
-  // Filter row: input por coluna (Excel-like). Status e Sev usam select. Resto contains.
   const sevOpts = [['','—'],['1','1'],['2','2'],['3','3'],['4','4']];
-  const fInput = (key, ph='Filtrar...') => `<input type="search" class="int-col-filter" data-fk="${key}" value="${(f[key]||'').replace(/"/g,'&quot;')}" placeholder="${ph}">`;
-  const fSelect = (key, opts) => `<select class="int-col-filter" data-fk="${key}">${opts.map(([v,l]) => `<option value="${v}" ${f[key]===v?'selected':''}>${l}</option>`).join('')}</select>`;
-
+  const fInput = (key, ph='Filtrar...') => `<input type="search" class="int-col-filter" data-fk="${key}" value="${(f[key]||'').replace(/"/g,'&quot;')}" placeholder="${ph}" autocomplete="off" spellcheck="false" aria-label="Filtrar coluna por ${ph}">`;
+  const fSelect = (key, opts) => `<select class="int-col-filter" data-fk="${key}" aria-label="Filtrar coluna">${opts.map(([v,l]) => `<option value="${v}" ${f[key]===v?'selected':''}>${l}</option>`).join('')}</select>`;
   wrap.innerHTML = `
-    <table class="hist-table int-table-compact">
+    <table class="hist-table int-table-compact int-table-lista">
       <thead>
         <tr>
           <th style="width:80px">Leito</th>
@@ -20450,20 +21131,64 @@ function intRenderLista() {
           <th></th>
         </tr>
       </thead>
-      <tbody>${rows}</tbody>
+      <tbody></tbody>
     </table>`;
-
-  // Bind dos filtros por coluna
+  // Bind dos filtros UMA vez; handler re-renderiza só o tbody (não o intRenderLista inteiro).
   wrap.querySelectorAll('.int-col-filter').forEach(el => {
     const fk = el.dataset.fk;
     const ev = el.tagName === 'SELECT' ? 'change' : 'input';
     el.addEventListener(ev, e => {
       INT.filtros[fk] = e.target.value;
       clearTimeout(el._timer);
-      el._timer = setTimeout(() => intRenderLista(), ev === 'change' ? 0 : 200);
+      el._timer = setTimeout(() => intRenderTbody(), ev === 'change' ? 0 : 200);
     });
   });
+}
 
+function intRenderTbody() {
+  const wrap = document.getElementById('int-lista-wrap');
+  if (!wrap) return;
+  const tbody = wrap.querySelector('table.int-table-lista tbody');
+  if (!tbody) { intBuildListaShell(wrap); return intRenderTbody(); }
+  const stats = document.getElementById('int-stats');
+  const filtrados = intFiltrados();
+  const totalAtivos = INT.internacoes.filter(i => i.status_internacao === 'ativa').length;
+  if (stats) stats.textContent = `Mostrando ${filtrados.length} de ${totalAtivos} internado${totalAtivos === 1 ? '' : 's'} ativo${totalAtivos === 1 ? '' : 's'}.`;
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="empty-msg" style="text-align:center;padding:24px">Nenhum internado ativo pra esse filtro.</td></tr>';
+    lucideRefresh();
+    return;
+  }
+  const rows = filtrados.map(i => {
+    const isAtivo = i.status_internacao === 'ativa';
+    const stLabel = { ativa: 'Ativa', alta_medica: 'Saiu', transferida: 'Transf.', obito: 'Óbito', evasao: 'Evasão', cancelada: 'Cancel.' }[i.status_internacao] || i.status_internacao;
+    const stClass = isAtivo ? 'hist-status-ativo' : 'hist-status-finalizado';
+    const pendShort = (i.pendencia || '—').replace(/</g,'&lt;').replace(/\n/g,' · ').slice(0, 80);
+    const sevBadge = i.grau_severidade ? `<span class="int-sev int-sev-${i.grau_severidade}">${i.grau_severidade}</span>` : '—';
+    const prevDrg = i.previsao_alta_drg || '—';
+    const prevKb = i.previsao_kanban || '—';
+    const dataAlta = i.data_alta || '—';
+    return `
+      <tr class="${isAtivo ? 'hist-row-ativo' : ''}" data-id="${i.id}">
+        <td class="hist-cell-editable int-col-leito" onclick="intEditarCelula('${i.id}','leito',this)" title="Leito ${i.leito || '—'}">${i.leito || '—'}</td>
+        <td><span class="hist-status-badge ${stClass}">${stLabel}</span></td>
+        <td class="int-col-paciente" title="Nome abreviado por LGPD">${abreviarNomePaciente(i.nome_paciente) || '—'}</td>
+        <td>${i.atendimento || '—'}</td>
+        <td title="Setor: ${(i.setor || '—').replace(/"/g,'&quot;')}">${i.setor || '—'}</td>
+        <td class="hist-cell-editable" title="${(i.especialidade || '').replace(/"/g,'&quot;')}" onclick="intEditarCelula('${i.id}','especialidade',this,'select')">${i.especialidade || '—'}</td>
+        <td style="text-align:center">${sevBadge}</td>
+        <td title="Previsão DRG">${prevDrg}</td>
+        <td title="Previsão Kanban (revisada equipe)">${prevKb}</td>
+        <td class="hist-cell-editable int-col-pendencia" onclick="intEditarCelula('${i.id}','pendencia',this)" title="${(i.pendencia || '').replace(/"/g,'&quot;')}">${pendShort}</td>
+        <td title="Data alta médica">${dataAlta}</td>
+        <td style="text-align:right;white-space:nowrap">
+          ${isAtivo ? `<button class="cad-btn-icon cad-btn-success" onclick="_intHandlerDarAlta('${i.id}')" title="Registrar saída (alta médica / óbito / evasão)" aria-label="Registrar saída"><i data-lucide="log-out"></i></button>` : ''}
+          <button class="cad-btn-icon" onclick="intAbrirEditar('${i.id}')" title="Editar tudo"><i data-lucide="pencil"></i></button>
+          <button class="cad-btn-icon cad-btn-danger" onclick="_intExcluirInline('${i.id}','${(abreviarNomePaciente(i.nome_paciente) || '').replace(/'/g, '&#39;')}')" title="Excluir registro de internação (pede senha)" aria-label="Excluir"><i data-lucide="trash-2"></i></button>
+        </td>
+      </tr>`;
+  }).join('');
+  tbody.innerHTML = rows;
   lucideRefresh();
 }
 
@@ -20750,6 +21475,17 @@ function intPopularInputRow() {
     last.addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); intInputSalvar(); }
     });
+  }
+  // [CC#24 porte HMSA 94e2838] Autocomplete do campo Leito: datalist com leitos distintos,
+  // ordenação natural (17.2 antes de 102), aceita leito improvisado novo (ex.: "Corredor").
+  const dl = document.getElementById('int-leito-datalist');
+  if (dl) {
+    const leitos = [...new Set(
+      (Array.isArray(INT.internacoes) ? INT.internacoes : [])
+        .map(i => (i.leito == null ? '' : String(i.leito).trim()))
+        .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' }));
+    dl.innerHTML = leitos.map(l => `<option value="${l.replace(/"/g, '&quot;')}"></option>`).join('');
   }
 }
 
