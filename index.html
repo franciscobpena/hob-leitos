@@ -13006,7 +13006,19 @@ async function exportarPDFKaizen() {
                    (adGlobal.total > 0 ? `  ·  ${adGlobal.pct}% de aderência` : '');
     doc.text(resumo, PW - M, 19, { align: 'right' });
 
-    let y = 34;
+    // Hiperlink pros projetos online (clicável no PDF)
+    const _kzUrl = 'https://hob-leitos.vercel.app/#/kaizens';
+    const _kzLinkTxt = 'Clique aqui para consultar os projetos Kaizens Online';
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(..._kzPdf.teal);
+    doc.textWithLink(_kzLinkTxt, M, 33, { url: _kzUrl });
+    const _kzLinkW = doc.getTextWidth(_kzLinkTxt);
+    doc.setDrawColor(..._kzPdf.teal); doc.setLineWidth(0.2);
+    doc.line(M, 34.2, M + _kzLinkW, 34.2);   // sublinhado
+    doc.setTextColor(..._kzPdf.muted); doc.setFontSize(7.5);
+    doc.textWithLink(_kzUrl, M, 38, { url: _kzUrl });
+
+    let y = 44;
 
     const ensureSpace = (need) => {
       if (y + need > PH - 14) { doc.addPage(); y = 18; }
