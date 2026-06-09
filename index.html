@@ -13067,20 +13067,21 @@ async function exportarPDFKaizen() {
 
         // Meta SMART em box destacado
         const metaTxt = (p.meta_smart && String(p.meta_smart).trim()) ? String(p.meta_smart).trim() : 'Meta SMART não definida.';
-        doc.setFontSize(8.5);
-        const metaLines = doc.splitTextToSize(metaTxt, CW - 22);
-        const metaH = metaLines.length * 4.1 + 5.5;
+        const _metaLineH = 4.1;
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+        const metaLines = doc.splitTextToSize(metaTxt, CW - 6);   // texto em largura cheia
+        const metaH = 5 + metaLines.length * _metaLineH + 3;       // linha do rótulo + texto + padding
         ensureSpace(metaH + 4);
         doc.setFillColor(..._kzPdf.metaBg);
         doc.setDrawColor(..._kzPdf.teal);
         doc.setLineWidth(0.2);
         doc.rect(M, y, CW, metaH, 'FD');
         doc.setTextColor(..._kzPdf.teal);
-        doc.setFont('helvetica', 'bold');
-        doc.text('META SMART', M + 2.5, y + 4);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+        doc.text('META SMART', M + 3, y + 4);                      // rótulo na própria linha
         doc.setTextColor(..._kzPdf.navy);
-        doc.setFont('helvetica', 'normal');
-        doc.text(metaLines, M + 22, y + 4);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+        doc.text(metaLines, M + 3, y + 8);                         // texto abaixo do rótulo
         y += metaH + 3;
 
         // Tabela de ações
