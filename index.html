@@ -12549,6 +12549,25 @@ function carregarJsPDF() {
   return window._jsPdfLoading;
 }
 
+/** Lazy load plugin jspdf-autotable (cdnjs imutável, sem SRI necessário).
+ *  Depende de jsPDF já carregado. Cache em window._jsPdfAutoTableLoading. */
+function carregarJsPDFAutoTable() {
+  return carregarJsPDF().then(lib => {
+    // plugin registra doc.autoTable no prototype do jsPDF
+    if (window._jsPdfAutoTableReady) return lib;
+    if (window._jsPdfAutoTableLoading) return window._jsPdfAutoTableLoading;
+    window._jsPdfAutoTableLoading = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+      s.crossOrigin = 'anonymous';
+      s.onload = () => { window._jsPdfAutoTableReady = true; resolve(lib); };
+      s.onerror = () => reject(new Error('Falha carregando jspdf-autotable'));
+      document.head.appendChild(s);
+    });
+    return window._jsPdfAutoTableLoading;
+  });
+}
+
 /** Paleta F0-F4 replicada de index.html:444-448 (--f0..--f4 CSS).
  *  Sync manual: se CSS mudar, atualizar aqui. */
 const _pdfPaleta = {
@@ -12912,6 +12931,222 @@ async function exportarPDFLeitos() {
   const hoje = new Date().toLocaleDateString('pt-BR');
   const safeDate = hoje.replace(/\//g, '-');
   doc.save(`${HOSPITAL_ID}_leitos_${safeDate}.pdf`);
+}
+
+/* ============================================================
+   EXPORT PDF PROJETOS KAIZEN — relatório formatado por projeto
+   Conteúdo por projeto: nome, líder, meta SMART, ações (responsável + prazo + status).
+   Agrupa por raia. jsPDF + autotable (lazy, cdnjs imutável).
+   ============================================================ */
+
+/** Paleta do relatório Kaizen (navy/teal da casa + cores de status). */
+const _kzPdf = {
+  navy:  [30, 41, 59],     // #1e293b títulos
+  teal:  [13, 148, 136],   // #0d9488 accent
+  muted: [100, 116, 139],  // #64748b secundário
+  line:  [226, 232, 240],  // #e2e8f0 divisórias
+  metaBg:[240, 249, 247],  // teal bem claro pro box da meta
+  status: {
+    concluido:             [34, 197, 94],
+    em_andamento:          [59, 130, 246],
+    risco_atraso:          [245, 158, 11],
+    em_atraso:             [239, 68, 68],
+    estacionamento_ideias: [148, 163, 184],
+    cancelada:             [148, 163, 184]
+  }
+};
+
+/** Formata 'YYYY-MM-DD' (ou Date) em dd/mm/aaaa pt-BR. Vazio → '—'. */
+function _kzPdfData(v) {
+  if (!v) return '—';
+  const d = (v instanceof Date) ? v : new Date(v + (String(v).length === 10 ? 'T00:00:00' : ''));
+  if (isNaN(d.getTime())) return String(v);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+/** Orquestra geração do PDF Kaizen + download. */
+async function exportarPDFKaizen() {
+  showToast('Gerando PDF dos projetos Kaizen...', 'info');
+  let lib;
+  try { lib = await carregarJsPDFAutoTable(); }
+  catch (e) { showToast('Erro carregando PDF: ' + (e.message || e), 'error'); return; }
+  try {
+    const { jsPDF } = lib;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const PW = doc.internal.pageSize.getWidth();
+    const PH = doc.internal.pageSize.getHeight();
+    const M = 14;                       // margem
+    const CW = PW - M * 2;              // largura útil
+    const hoje = new Date();
+
+    const todos = (typeof getAllProjetosComOverrides === 'function')
+      ? getAllProjetosComOverrides()
+      : ((typeof MOCK_PROJETOS !== 'undefined' && MOCK_PROJETOS.projetos) ? MOCK_PROJETOS.projetos : []);
+    // Relatório espelha a matriz visível: exclui arquivados.
+    const projetos = todos.filter(p => !(typeof _isProjetoArquivado === 'function' && _isProjetoArquivado(p)));
+    const raias = (typeof MOCK_PROJETOS !== 'undefined' && MOCK_PROJETOS.raias)
+      ? MOCK_PROJETOS.raias.slice().sort((a, b) => (a.ordem || 0) - (b.ordem || 0)) : [];
+    const raiaNome = {}; raias.forEach(r => { raiaNome[r.id] = r.nome; });
+
+    // --- Cabeçalho do relatório (capa enxuta no topo da pág 1) ---
+    const totAcoes = projetos.reduce((s, p) => s + (p.acoes ? p.acoes.length : 0), 0);
+    const adGlobal = (typeof calcularAderencia === 'function') ? calcularAderencia(projetos, hoje) : { pct: 0, total: 0 };
+
+    doc.setFillColor(..._kzPdf.navy);
+    doc.rect(0, 0, PW, 26, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+    doc.text('Projetos Kaizen', M, 12);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    doc.setTextColor(...[203, 213, 225]);
+    doc.text('Hospital Municipal Odilon Behrens', M, 19);
+    doc.setFontSize(8.5);
+    doc.text('Emitido em ' + hoje.toLocaleDateString('pt-BR'), PW - M, 12, { align: 'right' });
+    const resumo = `${projetos.length} projeto${projetos.length === 1 ? '' : 's'}  ·  ${totAcoes} ${totAcoes === 1 ? 'ação' : 'ações'}` +
+                   (adGlobal.total > 0 ? `  ·  ${adGlobal.pct}% de aderência` : '');
+    doc.text(resumo, PW - M, 19, { align: 'right' });
+
+    let y = 34;
+
+    const ensureSpace = (need) => {
+      if (y + need > PH - 14) { doc.addPage(); y = 18; }
+    };
+
+    // --- Por raia → por projeto ---
+    for (const raia of raias) {
+      const projsRaia = projetos.filter(p => p.raia === raia.id).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      if (!projsRaia.length) continue;
+
+      ensureSpace(14);
+      // faixa da raia
+      doc.setFillColor(..._kzPdf.teal);
+      doc.rect(M, y, CW, 7, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.text((raiaNome[raia.id] || raia.nome || raia.id).toUpperCase(), M + 2.5, y + 4.8);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      doc.text(`${projsRaia.length} projeto${projsRaia.length === 1 ? '' : 's'}`, PW - M - 2.5, y + 4.8, { align: 'right' });
+      y += 11;
+
+      for (const p of projsRaia) {
+        const acoes = (typeof _sortAcoesKaizen === 'function') ? _sortAcoesKaizen(p.acoes) : (p.acoes || []);
+        const statusProj = (typeof statusProjetoAgregado === 'function') ? statusProjetoAgregado(p) : null;
+        const ad = (typeof calcularAderencia === 'function') ? calcularAderencia([p], hoje) : { pct: 0, total: 0 };
+        const prazoProj = (typeof _prazoEfetivoProjeto === 'function') ? _prazoEfetivoProjeto(p) : p.prazo;
+
+        // espaço mínimo pro bloco de cabeçalho do projeto não ficar órfão no rodapé
+        ensureSpace(34);
+
+        // Nome do projeto
+        doc.setTextColor(..._kzPdf.navy);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+        const nomeLines = doc.splitTextToSize(p.nome || 'Projeto sem nome', CW);
+        doc.text(nomeLines, M, y + 1);
+        y += nomeLines.length * 5.2 + 1.5;
+
+        // Linha meta: líder · status · prazo · aderência
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+        doc.setTextColor(..._kzPdf.muted);
+        const lider = (p.responsavel && String(p.responsavel).trim()) ? p.responsavel : 'Líder não definido';
+        const adTxt = ad.total === 0 ? 'sem ações de compromisso' : `${ad.pct}% de aderência`;
+        const statusTxt = statusProj ? (typeof statusLabel === 'function' ? statusLabel(statusProj) : statusProj) : '—';
+        doc.text(`Líder: ${lider}   |   Status: ${statusTxt}   |   Prazo: ${_kzPdfData(prazoProj)}   |   ${adTxt}`, M, y + 1);
+        y += 6;
+
+        // Meta SMART em box destacado
+        const metaTxt = (p.meta_smart && String(p.meta_smart).trim()) ? String(p.meta_smart).trim() : 'Meta SMART não definida.';
+        doc.setFontSize(8.5);
+        const metaLines = doc.splitTextToSize(metaTxt, CW - 22);
+        const metaH = metaLines.length * 4.1 + 5.5;
+        ensureSpace(metaH + 4);
+        doc.setFillColor(..._kzPdf.metaBg);
+        doc.setDrawColor(..._kzPdf.teal);
+        doc.setLineWidth(0.2);
+        doc.rect(M, y, CW, metaH, 'FD');
+        doc.setTextColor(..._kzPdf.teal);
+        doc.setFont('helvetica', 'bold');
+        doc.text('META SMART', M + 2.5, y + 4);
+        doc.setTextColor(..._kzPdf.navy);
+        doc.setFont('helvetica', 'normal');
+        doc.text(metaLines, M + 22, y + 4);
+        y += metaH + 3;
+
+        // Tabela de ações
+        const body = acoes.map((a, i) => {
+          const st = (typeof _statusEfetivoAcao === 'function') ? _statusEfetivoAcao(a, hoje) : a.status;
+          const stLabel = (typeof statusLabel === 'function') ? statusLabel(st) : st;
+          const prog = (a.progresso_pct != null) ? a.progresso_pct + '%' : '';
+          return {
+            cells: [
+              String(i + 1),
+              a.descricao || '—',
+              (a.responsavel && String(a.responsavel).trim()) ? a.responsavel : '—',
+              _kzPdfData(a.prazo),
+              prog ? `${stLabel} (${prog})` : stLabel
+            ],
+            _st: st
+          };
+        });
+
+        if (body.length === 0) {
+          ensureSpace(10);
+          doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
+          doc.setTextColor(..._kzPdf.muted);
+          doc.text('Nenhuma ação cadastrada.', M + 2, y + 2);
+          y += 8;
+        } else {
+          doc.autoTable({
+            startY: y,
+            margin: { left: M, right: M },
+            head: [['#', 'Ação', 'Responsável', 'Prazo', 'Status']],
+            body: body.map(r => r.cells),
+            styles: { font: 'helvetica', fontSize: 8, cellPadding: 1.8, overflow: 'linebreak', textColor: _kzPdf.navy, lineColor: _kzPdf.line, lineWidth: 0.1 },
+            headStyles: { fillColor: _kzPdf.navy, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            columnStyles: {
+              0: { cellWidth: 7, halign: 'center' },
+              1: { cellWidth: 'auto' },
+              2: { cellWidth: 32 },
+              3: { cellWidth: 20, halign: 'center' },
+              4: { cellWidth: 34 }
+            },
+            didParseCell: (hook) => {
+              if (hook.section === 'body' && hook.column.index === 4) {
+                const st = body[hook.row.index]._st;
+                const c = _kzPdf.status[st];
+                if (c) { hook.cell.styles.textColor = c; hook.cell.styles.fontStyle = 'bold'; }
+              }
+            }
+          });
+          y = doc.lastAutoTable.finalY + 7;
+        }
+      }
+      y += 2;
+    }
+
+    if (projetos.length === 0) {
+      doc.setTextColor(..._kzPdf.muted);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+      doc.text('Nenhum projeto Kaizen cadastrado.', M, y + 4);
+    }
+
+    // Rodapé com paginação em todas as páginas
+    const totalPag = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPag; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+      doc.setTextColor(..._kzPdf.muted);
+      doc.text('Projetos Kaizen — Hospital Odilon Behrens', M, PH - 7);
+      doc.text(`Página ${i} de ${totalPag}`, PW - M, PH - 7, { align: 'right' });
+    }
+
+    const safeDate = hoje.toLocaleDateString('pt-BR').replace(/\//g, '-');
+    doc.save(`projetos-kaizen-${HOSPITAL_ID.toLowerCase()}-${safeDate}.pdf`);
+    showToast('PDF exportado.', 'success');
+  } catch (err) {
+    console.error('[PDF Kaizen] erro:', err);
+    showToast('Erro ao gerar PDF: ' + (err.message || err), 'error');
+  }
 }
 
 /* ============================================================
@@ -24086,6 +24321,12 @@ function renderKaizenMatriz() {
       'title="Baixar matriz de projetos Kaizen + ações + aderência em Excel">' +
       '<i data-lucide="download" aria-hidden="true"></i>' +
       '<span>Exportar Excel</span>' +
+      '</button>' +
+      '<button class="btn btn-ghost" onclick="exportarPDFKaizen()" ' +
+      'style="font-size:11px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px" ' +
+      'title="Baixar relatório PDF: projeto, líder, meta SMART e ações com responsáveis e prazos">' +
+      '<i data-lucide="file-text" aria-hidden="true"></i>' +
+      '<span>Exportar PDF</span>' +
       '</button>';
     if (arquivadosCount > 0) {
       const toggleLabel = _mostrarArquivados ? 'Ocultar arquivados' : 'Mostrar arquivados (' + arquivadosCount + ')';
