@@ -2,7 +2,8 @@
   "version": 2,
   "builds": [
     { "src": "*.html", "use": "@vercel/static" },
-    { "src": "agenda/**", "use": "@vercel/static" }
+    { "src": "agenda/**", "use": "@vercel/static" },
+    { "src": "lib/**", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/", "headers": { "cache-control": "no-store, no-cache, must-revalidate, max-age=0" }, "dest": "/index.html" },
