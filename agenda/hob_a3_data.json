@@ -1,0 +1,247 @@
+{
+  "indicadores": {
+    "HOB_ind_fator_utilizacao": "Fator Utilização (F.U.)",
+    "HOB_ind_setup_leitos": "Setup de Leitos (Min)",
+    "HOB_ind_nedocs": "NEDOCs (Mediana)",
+    "HOB_ind_numero_kaizens": "Número de Kaizens (A3)",
+    "HOB_ind_los_com_internacao": "LOS COM Internação (Min)",
+    "HOB_ind_los_sem_internacao": "LOS SEM Internação (Min)",
+    "HOB_ind_tmp_origem_ps": "TMP Origem PS (Dias)"
+  },
+  "projetos": [
+    {
+      "id": "HOB_proj_bc",
+      "nome": "Kaizen BC — Aumento do volume de cirurgias e rotina gerencial do bloco",
+      "raia": "Governança",
+      "responsavel": "Samuel",
+      "corresponsavel": "Rose",
+      "meta_smart": "Implementar e automatizar indicadores de eficiência do bloco em até 30/06/2026",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_com_internacao", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-07-31",
+      "acoes": [
+        {"descricao": "Avaliar balanceamento da escala do anestesista podendo readequar em dias/horários de pico", "responsavel": "Samuel", "prazo": "2026-06-19", "status": "em_andamento", "pct": 0},
+        {"descricao": "Solicitar indicadores/KPIs (Ficha Técnica) para desenvolvimento junto a PBH e prazo", "responsavel": "Samuel", "prazo": "2026-06-10", "status": "em_andamento", "pct": 50},
+        {"descricao": "Unificar e realizar a gestão da Fila Cirúrgica do Odilon", "responsavel": "Samuel", "prazo": "2026-06-12", "status": "em_andamento", "pct": 50},
+        {"descricao": "Revisar e implementar Rito \"Bate-Mapa\" diário (sugestão às 16:00) — envolver NIR, líderes das especialidades médicas, Mat&Med, Faturamento", "responsavel": "Samuel", "prazo": "2026-06-12", "status": "em_andamento", "pct": 0},
+        {"descricao": "Mapear fluxo com Ortopedia e demais especialidades: fluxo urgência/emergência, consulta pré-anestésica, horas do clínico", "responsavel": "Camila", "prazo": "2026-06-19", "status": "em_andamento", "pct": 0},
+        {"descricao": "Propor tempo padrão por cirurgia/procedimentos e exames conforme complexidades e especialidades", "responsavel": "Samuel", "prazo": "2026-07-31", "status": "estacionamento_ideias", "pct": 0}
+      ]
+    },
+    {
+      "id": "HOB_proj_boarding",
+      "nome": "Kaizen Caracterização do Boarding",
+      "raia": "Governança",
+      "responsavel": "Thamyres",
+      "corresponsavel": null,
+      "meta_smart": "Criar indicador e monitoramento da caracterização do boarding bem como iniciar uma ação ou projeto de melhoria com impacto derivado da análise desse indicador em até 29/05/2026",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_com_internacao", "HOB_ind_los_sem_internacao", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-05-29",
+      "acoes": [
+        {"descricao": "Trazer na próxima visita do Lean os indicadores de abril da caracterização do Boarding e principais insights", "responsavel": "Thamyres", "prazo": "2026-04-30", "status": "concluido", "pct": 100},
+        {"descricao": "Relatório da PBH", "responsavel": "Érica", "prazo": "2026-04-24", "status": "concluido", "pct": 100},
+        {"descricao": "Relatório pelo DRG", "responsavel": "Érica", "prazo": "2026-05-11", "status": "concluido", "pct": 100},
+        {"descricao": "Criar indicador de caracterização do boarding e monitoramento", "responsavel": "Thamyres", "prazo": "2026-02-27", "status": "concluido", "pct": 100},
+        {"descricao": "Analisar a distribuição mediana das especialidades que ficam em boarding no dia", "responsavel": "Thamyres", "prazo": "2026-05-29", "status": "concluido", "pct": 100}
+      ]
+    },
+    {
+      "id": "HOB_proj_matmed",
+      "nome": "Kaizen Mat & Med",
+      "raia": "Governança",
+      "responsavel": "Juliana Sad",
+      "corresponsavel": null,
+      "meta_smart": "Organizar e monitorar principais materiais e medicamentos no almoxarifado (Curva A/B/C) em até 30/06/2026",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-06-30",
+      "acoes": [
+        {"descricao": "Revisar processo de liberação e baixa do medicamento controlado e implementar (Clínica Médica)", "responsavel": "Juliana", "prazo": "2026-04-29", "status": "em_atraso", "pct": 0},
+        {"descricao": "Realizar 5S na farmácia: organizando materiais com maior saída e Kanbans (sinalizações) na enfermaria (Curva A/B/C — Mat&Med e kits padrão)", "responsavel": "Juliana", "prazo": "2026-05-04", "status": "em_atraso", "pct": 0},
+        {"descricao": "Implementar sinalização visual Kanban nas prateleiras com relação ao estoque físico", "responsavel": "Juliana", "prazo": "2026-05-04", "status": "em_atraso", "pct": 0},
+        {"descricao": "Levantar medicamentos que mais impactam na alta para padronização de kits", "responsavel": "Juliana / Marina", "prazo": "2026-04-29", "status": "estacionamento_ideias", "pct": 0},
+        {"descricao": "Integração GRP-SIGRAH (acompanhar, cobrar)", "responsavel": "Juliana / Mateus / Diretoria", "prazo": null, "status": "estacionamento_ideias", "pct": null},
+        {"descricao": "Implementar indicador de % de ruptura de Mat&Med bem como processo de solicitação com as áreas", "responsavel": "Juliana", "prazo": "2026-07-31", "status": "estacionamento_ideias", "pct": 0}
+      ]
+    },
+    {
+      "id": "local_1778663941028_h4it",
+      "nome": "Gerenciamento das Previsões de Alta da Neuro",
+      "raia": "Governança",
+      "responsavel": "Marina",
+      "corresponsavel": null,
+      "meta_smart": "Alcançar 100% das previsões das altas oportunas para neuro com pelo menos 60% de assertividade nos casos em até 31/07/2026",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_fator_utilizacao", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-07-31",
+      "acoes": [
+        {"descricao": "Implementar controle e monitorar diariamente casos da Neuro identificando barreiras e pendências para altas", "responsavel": "Marina", "prazo": "2026-06-12", "status": "em_andamento", "pct": 0},
+        {"descricao": "Implementar indicador de previsibilidade e acurácia das altas programadas da Neuro", "responsavel": "Marina", "prazo": "2026-06-12", "status": "em_andamento", "pct": 0}
+      ]
+    },
+    {
+      "id": "HOB_proj_trauma",
+      "nome": "Otimização da Linha do Trauma",
+      "raia": "Passagem",
+      "responsavel": "Thamyres",
+      "corresponsavel": "Miguel",
+      "meta_smart": "Reduzir a quantidade de reencaminhamentos passando de X para Y em até 31/07/2026",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_numero_kaizens", "HOB_ind_los_sem_internacao"],
+      "prazo": "2026-06-30",
+      "acoes": [
+        {"descricao": "Monitorar e apurar KPIs do Kaizen do Trauma", "responsavel": "Thamyres", "prazo": "2026-04-30", "status": "concluido", "pct": 100},
+        {"descricao": "Elaborar POP trauma e treinar equipe", "responsavel": "Miguel", "prazo": "2026-06-30", "status": "em_andamento", "pct": 0},
+        {"descricao": "Mapear processo AS IS e discutir oportunidades com as áreas", "responsavel": null, "prazo": "2025-12-31", "status": "concluido", "pct": 100},
+        {"descricao": "Redesenhar áreas do PS para atender proposta do novo fluxo do trauma", "responsavel": "Thamyres", "prazo": "2026-01-30", "status": "concluido", "pct": 100},
+        {"descricao": "Definir meta SMART para o projeto A3/Kaizen (ex.: reduzir a quantidade de reencaminhamentos relativos entre as especialidades)", "responsavel": "Thamyres", "prazo": "2026-06-30", "status": "em_andamento", "pct": 50}
+      ]
+    },
+    {
+      "id": "HOB_proj_coluna",
+      "nome": "Otimização da Linha de Cuidado Coluna",
+      "raia": "Passagem",
+      "responsavel": "Vanessa",
+      "corresponsavel": "Thamyres",
+      "meta_smart": "(1) Reduzir a fila de boarding mediana de casos de coluna passando de X para Y em até 31/07/2026. (2) Reduzir o tempo médio de boarding de casos de coluna passando de X para Y em até 31/07/2027",
+      "indicadores": ["HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_fator_utilizacao", "HOB_ind_numero_kaizens", "HOB_ind_nedocs"],
+      "prazo": "2026-07-31",
+      "acoes": [
+        {"descricao": "NCG retomar planilha para rankear a prioridade por paciente", "responsavel": "Marciléia", "prazo": "2026-06-12", "status": "em_andamento", "pct": 0},
+        {"descricao": "Mapear as vagas de neurocirurgia das enfermarias, as cirurgias que realizam e percentual de cancelamento de bloco", "responsavel": "Thamyres / Marciléia", "prazo": null, "status": "concluido", "pct": 100},
+        {"descricao": "Rever horizontal", "responsavel": "Thamyres", "prazo": "2026-06-19", "status": "em_andamento", "pct": 0},
+        {"descricao": "Medir e monitorar: casos de coluna que chegarem na porta com papel de encaminhamento de outro município, separar para ofício da Superintendência", "responsavel": "Thamyres", "prazo": "2026-06-19", "status": "em_andamento", "pct": 0},
+        {"descricao": "Termo de orientação de coluna", "responsavel": "Thamyres / Erica", "prazo": null, "status": "concluido", "pct": 100},
+        {"descricao": "Definir Grupo da Coluna e papéis e responsabilidades", "responsavel": "Vanessa", "prazo": "2026-06-12", "status": "em_andamento", "pct": 50},
+        {"descricao": "Separar linha de cuidado da coluna: Ortopédica e Neuro", "responsavel": "Vanessa", "prazo": "2026-06-12", "status": "em_andamento", "pct": 50}
+      ]
+    },
+    {
+      "id": "local_1779383153601_gc3f",
+      "nome": "Otimização da Passagem do Paciente no PS — Reavaliações e Escala",
+      "raia": "Passagem",
+      "responsavel": "Thamyres",
+      "corresponsavel": "Vanessa",
+      "meta_smart": "(1) Reduzir LOS sem internação passando de uma média de 230' (out/2025 a abr/2026) para 200' (redução de 13%) até 31/07/2026. (2) LOS com internação passando de uma média de 1777' para 1600' (redução de 10%) até 31/07/2026",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_sem_internacao", "HOB_ind_numero_kaizens", "HOB_ind_los_com_internacao"],
+      "prazo": "2026-07-10",
+      "acoes": [
+        {"descricao": "Estabelecer local físico para realizar reavaliação dos pacientes", "responsavel": "Thamyres", "prazo": "2026-06-05", "status": "em_andamento", "pct": 0},
+        {"descricao": "Definir e implementar premissa: NIR ceder leito para o paciente e não para o bloco", "responsavel": "Thamyres", "prazo": "2026-06-05", "status": "em_andamento", "pct": 0},
+        {"descricao": "Definir fluxo para realizar reavaliação dos pacientes", "responsavel": "Thamyres", "prazo": "2026-06-05", "status": "em_andamento", "pct": 0},
+        {"descricao": "Elaborar proposta para diretoria da segmentação do fluxo: UPA, Decisão e Observação (análise de viabilidade)", "responsavel": "Thamyres", "prazo": "2026-07-10", "status": "estacionamento_ideias", "pct": 0},
+        {"descricao": "Realizar alinhamento com líderes médicos por especialidades: (1) divisão do plantão noturno com presença obrigatória dos médicos no setor (2) empoderamento fluxista", "responsavel": "Vanessa", "prazo": "2026-06-19", "status": "em_andamento", "pct": 0},
+        {"descricao": "Instituir e monitorar tempo de reavaliação médica: (1) Trauma — até 12 horas (2) Outros — até 6 horas", "responsavel": "Thamyres", "prazo": "2026-07-03", "status": "em_andamento", "pct": 0}
+      ]
+    },
+    {
+      "id": "HOB_proj_alta10",
+      "nome": "Kaizen Alta Oportuna até 10h",
+      "raia": "Saída",
+      "responsavel": "Marina",
+      "corresponsavel": "Vanessa",
+      "meta_smart": "Alcançar 60% de altas oportunas até às 12:00 até 31/07/2026",
+      "indicadores": ["HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_fator_utilizacao", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-05-29",
+      "acoes": [
+        {"descricao": "Revisar Kanbans e adicionar faróis", "responsavel": "Camila Vaz", "prazo": "2026-04-12", "status": "concluido", "pct": 100},
+        {"descricao": "Implementar governança do Comitê conforme estruturado", "responsavel": "Marina", "prazo": "2026-04-12", "status": "concluido", "pct": 100},
+        {"descricao": "Incluir Kanban na rotina do residente: passar revisão de alta, passar pendências", "responsavel": "Vanessa", "prazo": "2026-04-25", "status": "concluido", "pct": 100},
+        {"descricao": "Reunir coordenadores e preceptores para falar sobre o Kanban junto a EGA e liderança", "responsavel": "Vanessa", "prazo": "2026-04-25", "status": "concluido", "pct": 100},
+        {"descricao": "Rever possibilidade de sala de alta", "responsavel": "Diretoria / NIR", "prazo": null, "status": "estacionamento_ideias", "pct": null},
+        {"descricao": "POP/fluxo para plantonistas fazerem a alta no período noturno (são 3: 2 residentes e 1 preceptor)", "responsavel": "Camila Vaz", "prazo": null, "status": "estacionamento_ideias", "pct": null},
+        {"descricao": "Monitorar evolução das altas até às 10:00 por especialidade", "responsavel": "Marina", "prazo": "2026-01-30", "status": "concluido", "pct": 100},
+        {"descricao": "Implementar Kanban digital para as especialidades e acompanhar divulgando farol de previsão de altas oportunas", "responsavel": "Marina", "prazo": "2026-06-12", "status": "em_andamento", "pct": 50}
+      ]
+    },
+    {
+      "id": "HOB_proj_exames_imagem",
+      "nome": "Kaizen Exames de TC",
+      "raia": "Saída",
+      "responsavel": "Marta",
+      "corresponsavel": "Erika",
+      "meta_smart": "Revisar 100% dos exames de TC para faturamento, levantando exames com possibilidades de ganho financeiro não computados até 29/06/2026",
+      "indicadores": ["HOB_ind_los_com_internacao", "HOB_ind_los_sem_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-06-26",
+      "acoes": [
+        {"descricao": "Realizar comunicado institucional com a diretoria", "responsavel": "Mara", "prazo": "2026-04-05", "status": "concluido", "pct": 100},
+        {"descricao": "Implementar agenda noturna como rotina", "responsavel": "Marta", "prazo": "2026-04-10", "status": "concluido", "pct": 100},
+        {"descricao": "Comunicar à equipe médica as pactuações acordadas e o processo", "responsavel": "Marta", "prazo": "2026-04-08", "status": "concluido", "pct": 100},
+        {"descricao": "Estipular horários padrão para raio-x dos pacientes internados e avisar quais exames são prioridade", "responsavel": "Marta", "prazo": "2026-05-22", "status": "concluido", "pct": 100},
+        {"descricao": "Montar um fluxo de solicitação e liberação via forms/planilha online ou via MV", "responsavel": "Marta", "prazo": "2026-06-30", "status": "em_andamento", "pct": 0},
+        {"descricao": "Revisar e quantificar exames de TC que podem não ter sido contabilizados para faturamento", "responsavel": "Marta", "prazo": "2026-06-12", "status": "em_andamento", "pct": 10}
+      ]
+    },
+    {
+      "id": "HOB_proj_exames_cultura",
+      "nome": "Otimização do Tempo de Liberação dos Exames de Cultura",
+      "raia": "Saída",
+      "responsavel": "Erika",
+      "corresponsavel": "Vanda",
+      "meta_smart": "Até 31/07/2026, liberar 80% dos laudos de cultura das internações com leitura concluída até as 9:30",
+      "indicadores": ["HOB_ind_nedocs", "HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-07-31",
+      "acoes": [
+        {"descricao": "Levantar ação realizada para reduzir o indicador", "responsavel": "Ana Rita", "prazo": null, "status": "concluido", "pct": 100},
+        {"descricao": "Mapear e implementar indicador de atraso de liberação de cultura", "responsavel": "Ana Rita", "prazo": null, "status": "concluido", "pct": 100},
+        {"descricao": "Rever processo de liberação de exames de cultura garantindo o recebimento dos exames pelo médico até 9:30", "responsavel": "Ana Rita", "prazo": "2026-06-19", "status": "em_andamento", "pct": 30}
+      ]
+    },
+    {
+      "id": "HOB_proj_setup_leitos",
+      "nome": "Otimização do Tempo de Setup de Leitos",
+      "raia": "Saída",
+      "responsavel": "Renata Mascarenhas",
+      "corresponsavel": "Anderson Milhorato",
+      "meta_smart": "Reduzir em 30% o tempo médio de setup passando de 100 minutos em média para 45 minutos",
+      "indicadores": ["HOB_ind_tmp_origem_ps", "HOB_ind_fator_utilizacao", "HOB_ind_setup_leitos", "HOB_ind_numero_kaizens", "HOB_ind_los_com_internacao"],
+      "prazo": "2026-05-29",
+      "acoes": [
+        {"descricao": "Comparar indicadores mensais (média antes e depois) e divulgar para o hospital o impacto", "responsavel": "Renata", "prazo": "2026-04-30", "status": "concluido", "pct": 100},
+        {"descricao": "Ampliar os setores monitorados", "responsavel": "Renata", "prazo": "2026-03-31", "status": "concluido", "pct": 100},
+        {"descricao": "Realizar kits de rouparia", "responsavel": "Renata", "prazo": "2026-03-31", "status": "concluido", "pct": 100},
+        {"descricao": "Implementar kit da enfermaria", "responsavel": "Renata Mascarenhas", "prazo": "2026-05-29", "status": "concluido", "pct": 100}
+      ]
+    },
+    {
+      "id": "HOB_proj_cti",
+      "nome": "Aumento da Eficiência na Liberação das Vagas no CTI",
+      "raia": "Saída",
+      "responsavel": "Janice",
+      "corresponsavel": "Camila Moura",
+      "meta_smart": "Reduzir o tempo entre a reserva do paciente de alta do CTI para as enfermarias em 50%, passando de 2 horas para 1 hora até 31/07/2026",
+      "indicadores": ["HOB_ind_los_com_internacao", "HOB_ind_fator_utilizacao", "HOB_ind_tmp_origem_ps", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-06-26",
+      "acoes": [
+        {"descricao": "Implementar Kanban no CTI", "responsavel": "Janice / Camila Vaz", "prazo": "2026-05-15", "status": "em_atraso", "pct": 0},
+        {"descricao": "Rever fluxo de alta mapeando melhorias", "responsavel": "Janice", "prazo": "2026-05-29", "status": "concluido", "pct": 100},
+        {"descricao": "Estabelecer pré-alta no dia anterior à alta do CTI (planilha)", "responsavel": "Janice / C. Zampa", "prazo": "2026-05-15", "status": "concluido", "pct": 100},
+        {"descricao": "Análise de tempo de permanência das principais patologias em outros hospitais, para avaliar o tempo do HOB e revisar protocolos", "responsavel": "Janice / Erica", "prazo": null, "status": "estacionamento_ideias", "pct": 0},
+        {"descricao": "Orientar a equipe em relação ao fluxo da pré-alta", "responsavel": "Janice", "prazo": "2026-05-29", "status": "concluido", "pct": 100}
+      ]
+    },
+    {
+      "id": "local_1780399756457_2oqw",
+      "nome": "Kaizen Laboratório",
+      "raia": "Saída",
+      "responsavel": "Ana Rita",
+      "corresponsavel": null,
+      "meta_smart": "Reduzir em 30% o tempo de liberação de exames de análises clínicas passando de 3 horas para 2 horas até 31/07/2026",
+      "indicadores": ["HOB_ind_los_com_internacao", "HOB_ind_los_sem_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-07-31",
+      "acoes": [
+        {"descricao": "Implementar indicador de monitoramento de liberação dos exames de análises clínicas", "responsavel": "Ana Rita", "prazo": "2026-06-12", "status": "em_andamento", "pct": 0}
+      ]
+    },
+    {
+      "id": "local_1781021392051_gedq",
+      "nome": "Intervalo de Substituição de Leitos",
+      "raia": "Saída",
+      "responsavel": "Camila",
+      "corresponsavel": null,
+      "meta_smart": "Reduzir o intervalo de substituição de leitos em ZZ%, passando de X para Y em até 31/07/2026",
+      "indicadores": ["HOB_ind_los_com_internacao", "HOB_ind_tmp_origem_ps", "HOB_ind_fator_utilizacao", "HOB_ind_numero_kaizens"],
+      "prazo": "2026-07-31",
+      "acoes": [
+        {"descricao": "Implementar indicador e parametrizar no BI", "responsavel": "Camila", "prazo": "2026-06-09", "status": "concluido", "pct": 100},
+        {"descricao": "Analisar oportunidades a partir do monitoramento do indicador e processo, definindo uma meta com a equipe", "responsavel": "Camila", "prazo": "2026-06-19", "status": "em_andamento", "pct": 0}
+      ]
+    }
+  ]
+}
