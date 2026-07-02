@@ -13544,7 +13544,7 @@ function _a3Slide(pptx, p, hoje, hospitalNome) {
 }
 
 const _A3_PROF_GPT = 'https://chatgpt.com/g/g-6985f82af5608191a8b757c64e4ee894-professor-kaizen';
-const _A3_KZ_URL = 'https://hmsa-leitos.vercel.app/#/kaizens';
+const _A3_KZ_URL = 'https://hob-leitos.vercel.app/#/kaizens';
 const _A3_PROF_PROMPT = `Você será meu facilitador de Projeto A3 Lean em ambiente hospitalar.
 
 Quero construir um projeto A3 passo a passo, de forma interativa, usando como referência o seguinte exemplo:
@@ -13627,7 +13627,7 @@ function _a3SlideProfessor(pptx) {
   const py = by + bh + 0.6;
   s.addShape(pptx.ShapeType.roundRect, { x: imgX, y: py, w: bw, h: bh, rectRadius: 0.1, fill: { color: panel }, line: { color: teal, width: 1.25 } });
   s.addText('▸  Consultar os projetos online na plataforma', { x: imgX, y: py, w: bw, h: bh, fontFace: 'Calibri', fontSize: 15, bold: true, color: teal, align: 'center', valign: 'middle', hyperlink: { url: _A3_KZ_URL, tooltip: 'Abrir os projetos Kaizen na plataforma' } });
-  s.addText('hmsa-leitos.vercel.app/#/kaizens', { x: imgX, y: py + bh + 0.14, w: bw, h: 0.3, fontFace: 'Calibri', fontSize: 10, color: dim, align: 'center', hyperlink: { url: _A3_KZ_URL } });
+  s.addText('hob-leitos.vercel.app/#/kaizens', { x: imgX, y: py + bh + 0.14, w: bw, h: 0.3, fontFace: 'Calibri', fontSize: 10, color: dim, align: 'center', hyperlink: { url: _A3_KZ_URL } });
 
   // --- Direita: prompt copiável ---
   const px = imgX + imgW + 0.5, pw = _A3.W - M - px;
