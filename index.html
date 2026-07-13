@@ -66,6 +66,7 @@
 <!-- [A3 Kaizen — porte HMSA→HOB 2026-07-02] faixa de logos PROADI-SUS + retrato "Professor Kaizen" (base64) p/ o export A3 PPTX -->
 <script src="/lib/kaizen-a3-logos.js" defer></script>
 <script src="/lib/kaizen-a3-professor.js" defer></script>
+<script src="/lib/kaizen-a3-exemplos.js" defer></script>
 <script>
 // [Fase 8 WD-4] CDN scripts agora com `defer` — cdnFallback movido p/ DOMContentLoaded
 // pra rodar APÓS os defers terminarem de carregar/parsear (evita falsos positivos).
@@ -13648,6 +13649,44 @@ Comece pela etapa A – Histórico e Contexto.
 Faça apenas as perguntas necessárias.`;
 
 /** Página 2 (após capa): convite a continuar o A3 com o GPT Professor Kaizen — estética LUZ da marca. */
+
+/* [13/07] Slides de EXEMPLO no comeco do PPT: A3 reais de outros hospitais do
+   programa, embutidos como imagem (lib/kaizen-a3-exemplos.js). Servem de referencia
+   pra quem vai preencher o proprio A3 — pedido do Maestro. Se o asset nao carregar,
+   o PPT sai sem eles em vez de quebrar. */
+function _a3SlidesExemplos(pptx) {
+  const exs = window._A3_EXEMPLOS;
+  if (!Array.isArray(exs) || !exs.length) return;
+
+  const cap = pptx.addSlide();
+  cap.background = { color: _A3C.navy };
+  cap.addText('Exemplos de A3 já preenchidos', {
+    x: 1, y: 4.2, w: _A3.W - 2, h: 0.9, fontFace: 'Calibri', fontSize: 34, bold: true,
+    color: 'FFFFFF', align: 'center' });
+  cap.addText('A3 reais de outros hospitais do programa. Use como referência para preencher o seu — ' +
+    'os slides do seu hospital vêm logo depois.', {
+    x: 1.6, y: 5.2, w: _A3.W - 3.2, h: 0.8, fontFace: 'Calibri', fontSize: 15,
+    color: 'C9D6E2', align: 'center' });
+
+  exs.forEach(function (ex) {
+    (ex.imgs || []).forEach(function (img, i) {
+      const s = pptx.addSlide();
+      s.background = { color: 'FFFFFF' };
+      const rot = 'EXEMPLO · ' + ex.titulo + ' (' + ex.org + ')' +
+        (ex.imgs.length > 1 ? '  ·  ' + (i + 1) + '/' + ex.imgs.length : '');
+      s.addText(rot, { x: _A3.M, y: 0.16, w: _A3.W - _A3.M * 2, h: 0.34,
+        fontFace: 'Calibri', fontSize: 12, bold: true, color: _A3C.label });
+      // A imagem original é 13.33x7.5 (16:9). Encaixa na largura util mantendo proporcao.
+      const w = _A3.W - _A3.M * 2;
+      const h = w * 7.5 / 13.33;
+      // o exemplo e 16:9 e a folha A3 e mais alta: centraliza no espaco que sobra
+      // (abaixo do rotulo), senao fica uma faixa branca grande no pe do slide.
+      const y = 0.56 + (_A3.H - 0.56 - h) / 2;
+      s.addImage({ data: img, x: _A3.M, y: y, w: w, h: h });
+    });
+  });
+}
+
 function _a3SlideProfessor(pptx) {
   const s = pptx.addSlide();
   const M = _A3.M;
@@ -13776,6 +13815,7 @@ async function exportarA3PPTX() {
     _a3SlideProfessor(pptx);
     // Página 3: guia de preenchimento (deletável) — panorama auto vs campo + mapa A–I
     _a3SlideGuiaPreenchimento(pptx);
+    _a3SlidesExemplos(pptx);   // [13/07] exemplos ANTES dos A3 do hospital
 
     // 1 slide por projeto, agrupado por raia na ordem do relatório
     for (const raia of raias) {
