@@ -3,6 +3,7 @@
   "builds": [
     { "src": "*.html", "use": "@vercel/static" },
     { "src": "agenda/**", "use": "@vercel/static" },
+    { "src": "exemplos-a3/**", "use": "@vercel/static" },
     { "src": "lib/**", "use": "@vercel/static" }
   ],
   "routes": [
