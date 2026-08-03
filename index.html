@@ -13516,7 +13516,9 @@ function _a3Slide(pptx, p, hoje, hospitalNome) {
   const causR = { x: rx, y: bodyTop + LG, w: colW, h: causH };
   _a3Label(slide, rx, bodyTop, colW, 'Análise das Causas · por que o problema acontece?  —  etapa E');
   _a3Box(slide, pptx, causR);
-  const cabecaTxt = probDef ? String(p.descricao_problema).trim() : '[Descreva o problema: gap observável, sem causa nem solução]';
+  const cabecaFull = probDef ? String(p.descricao_problema).trim() : '[Descreva o problema: gap observável, sem causa nem solução]';
+  // eco em caixa fixa (h 0.5"): problema longo estoura e sobrepõe as causas; o texto integral já está na etapa B
+  const cabecaTxt = cabecaFull.length > 200 ? cabecaFull.slice(0, 200).trimEnd() + '…' : cabecaFull;
   if (p.causas_raiz && String(p.causas_raiz).trim()) {
     // causas levantadas (v1 texto, 1 por linha) — lista limpa; fishbone estruturado = v2
     const causas = String(p.causas_raiz).trim().split(/\r?\n+/).map(s => s.replace(/^[-•\s]+/, '').trim()).filter(Boolean);
